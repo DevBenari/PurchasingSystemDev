@@ -11,12 +11,13 @@
         public Guid? PositionId { get; set; }
         public string? Position { get; set; }
         public string PlaceOfBirth { get; set; }
-        public DateTime DateOfBirth { get; set; } = DateTime.Now;
+        public DateTimeOffset DateOfBirth { get; set; } = DateTimeOffset.Now;
         public string Gender { get; set; }
         public string Address { get; set; }
         public string Handphone { get; set; }
         public string Email { get; set; }
         public IFormFile? Foto { get; set; }
         public string? UserPhotoPath { get; set; }
+        public bool IsActive { get; set; }
     }
 }
