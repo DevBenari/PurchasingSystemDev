@@ -5,13 +5,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using PurchasingSystemApps.Areas.MasterData.Repositories;
 using PurchasingSystemApps.Areas.Order.Models;
 using PurchasingSystemApps.Areas.Order.Repositories;
 using PurchasingSystemApps.Areas.Order.ViewModels;
 using PurchasingSystemApps.Data;
+using PurchasingSystemApps.Hubs;
 using PurchasingSystemApps.Models;
 using PurchasingSystemApps.Repositories;
 using System.Data;
@@ -36,6 +39,8 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
         private readonly IDepartmentRepository _departmentRepository;
         private readonly IPositionRepository _positionRepository;
 
+        private readonly IHubContext<ChatHub> _hubContext;
+
         private readonly IHostingEnvironment _hostingEnvironment;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IConfiguration _configuration;
@@ -55,6 +60,8 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
             IDepartmentRepository departmentRepository,
             IPositionRepository positionRepository,
 
+            IHubContext<ChatHub> hubContext,
+
             IHostingEnvironment hostingEnvironment,
             IWebHostEnvironment webHostEnvironment,
             IConfiguration configuration
@@ -72,6 +79,8 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
             _dueDateRepository = dueDateRepository;
             _departmentRepository = departmentRepository;
             _positionRepository = positionRepository;
+
+            _hubContext = hubContext;
 
             _hostingEnvironment = hostingEnvironment;
             _webHostEnvironment = webHostEnvironment;
@@ -123,7 +132,7 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
         public IActionResult Index()
         {
             ViewBag.Active = "PurchaseRequest";
-
+            
             //var countPurchaseRequest = _applicationDbContext.PurchaseRequests.Where(p => p.Status == "Waiting Approval").GroupBy(u => u.PurchaseRequestId).Select(y => new
             //{
             //    PurchaseRequestId = y.Key,
@@ -300,6 +309,32 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
                 purchaseRequest.PurchaseRequestDetails = ItemsList;
                 _purchaseRequestRepository.Tambah(purchaseRequest);
 
+                //Signal R
+
+                var data2 = _purchaseRequestRepository.GetAllPurchaseRequest();
+                //var data2 = new List<dynamic>
+                //    {
+                //        new { CreateBy = "USER1004", PurchaseRequestNumber = "PR004", CreateDateTime = DateTime.Parse("2024-09-26 10:00:00") },
+                //        new { CreateBy = "USER1005", PurchaseRequestNumber = "PR002", CreateDateTime = DateTime.Parse("2024-09-20 09:00:00") },
+                //        new { CreateBy = "USER1006", PurchaseRequestNumber = "PR003", CreateDateTime = DateTime.Parse("2024-09-15 08:30:00") }
+                //    };
+
+                var loggerData = new List<string>();
+
+                foreach (var logger in data2)
+                {
+                    var detail = $"{logger.CreateBy}, {logger.PurchaseRequestNumber}, {logger.CreateDateTime}";
+                    loggerData.Add(detail);
+                }
+
+                int totalKaryawan = data2.Count();
+                var loggerDataJson = JsonConvert.SerializeObject(loggerData);
+                ViewBag.TotalKaryawan = totalKaryawan;
+                ViewBag.LoggerData = loggerDataJson;
+                await _hubContext.Clients.All.SendAsync("UpdateDataCount", totalKaryawan);
+                await _hubContext.Clients.All.SendAsync("UpdateDataLogger", loggerDataJson);
+
+                //End Signal R
                 if (model.UserApprove1Id != null) 
                 {
                     var approval = new Approval
