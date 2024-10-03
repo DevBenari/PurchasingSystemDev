@@ -9,6 +9,7 @@ using PurchasingSystemApps.Areas.Order.Repositories;
 using PurchasingSystemApps.Areas.Transaction.Repositories;
 using PurchasingSystemApps.Areas.Warehouse.Repositories;
 using PurchasingSystemApps.Data;
+using PurchasingSystemApps.Hubs;
 using PurchasingSystemApps.Models;
 using PurchasingSystemApps.Repositories;
 
@@ -19,6 +20,7 @@ builder.Services.AddControllersWithViews();
 
 
 //Tambahan Baru
+builder.Services.AddHttpClient();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -65,6 +67,7 @@ builder.Services.AddScoped<IUnitLocationRepository>();
 builder.Services.AddScoped<IDueDateRepository>();
 builder.Services.AddScoped<IDepartmentRepository>();
 builder.Services.AddScoped<IPositionRepository>();
+builder.Services.AddSignalR();
 #endregion
 
 #region Areas Order
@@ -111,6 +114,9 @@ app.UseFastReport();
 
 app.UseEndpoints(endpoints =>
 {
+    // SignalR
+    endpoints.MapHub<ChatHub>("/chathub");
+    // End SignalR
     endpoints.MapDefaultControllerRoute();
 
     endpoints.MapControllerRoute(
