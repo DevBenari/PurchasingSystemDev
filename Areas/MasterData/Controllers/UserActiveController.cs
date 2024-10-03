@@ -8,7 +8,6 @@ using PurchasingSystemApps.Areas.MasterData.Models;
 using PurchasingSystemApps.Areas.MasterData.Repositories;
 using PurchasingSystemApps.Areas.MasterData.ViewModels;
 using PurchasingSystemApps.Areas.Order.Repositories;
-using PurchasingSystemApps.Areas.Transaction.Repositories;
 using PurchasingSystemApps.Data;
 using PurchasingSystemApps.Models;
 using PurchasingSystemApps.Repositories;
@@ -234,7 +233,6 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
                 return View(vm);
             }
         }
-
 
         [HttpGet]
         [AllowAnonymous]
