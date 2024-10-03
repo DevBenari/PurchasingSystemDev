@@ -237,6 +237,17 @@ namespace PurchasingSystemApps.Controllers
 
         [HttpPost]
         [AllowAnonymous]
+
+        public async Task<IActionResult> GetProfile()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var userId = new Guid(user.Id);
+            var data = _userActiveRepository.GetAllUser().Where(x => x.CreateBy == userId).ToList();
+
+            //// Gunakan userId untuk melakukan sesuatu, misalnya:
+            ViewBag.UserId = userId;
+            return Json(data);
+        }
         public async Task<IActionResult> Logout()
         {
             var getUser = _userActiveRepository.GetAllUserLogin().Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
@@ -257,5 +268,7 @@ namespace PurchasingSystemApps.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+
     }
 }
