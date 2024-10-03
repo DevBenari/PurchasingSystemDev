@@ -96,9 +96,9 @@
                                             <th></th>
                                             <td>@Product.CreateDateTime.ToString("dd MMMM yyyy")</td>                                            
                                             <td>@Product.ProductName</td>
-                                            <td>@Product.SupplierId</td>
-                                            <td>@Product.CategoryId</td>
-                                            <td>@Product.MeasurementId</td>
+                                            <td>@Product.Supplier.SupplierName</td>
+                                            <td>@Product.Category.CategoryName</td>
+                                            <td>@Product.Measurement.MeasurementName</td>
                                             <td>@Product.MinStock</td>
                                             <td>@Product.MaxStock</td>
                                             <td>@Product.BufferStock</td>

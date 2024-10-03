@@ -29,6 +29,7 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
         private readonly IProductRepository _productRepository;
         private readonly IPurchaseRequestRepository _purchaseRequestRepository;
         private readonly ITermOfPaymentRepository _termOfPaymentRepository;
+        private readonly IPurchaseOrderRepository _purchaseOrderRepository;
 
         private readonly IHostingEnvironment _hostingEnvironment;
 
@@ -41,6 +42,7 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
             IProductRepository productRepository,
             IPurchaseRequestRepository purchaseRequestRepository,
             ITermOfPaymentRepository termOfPaymentRepository,
+            IPurchaseOrderRepository purchaseOrderRepository,
 
             IHostingEnvironment hostingEnvironment
         )
@@ -53,6 +55,7 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
             _productRepository = productRepository;
             _purchaseRequestRepository = purchaseRequestRepository;
             _termOfPaymentRepository = termOfPaymentRepository;
+            _purchaseOrderRepository = purchaseOrderRepository;
 
             _hostingEnvironment = hostingEnvironment;
         }
@@ -80,30 +83,112 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
             var getUserLogin = _userActiveRepository.GetAllUserLogin().Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
             var getUserActive = _userActiveRepository.GetAllUser().Where(c => c.UserActiveCode == getUserLogin.KodeUser).FirstOrDefault();
             var getUser1 = _approvalRepository.GetAllApproval().Where(a => a.ApprovalStatusUser == "User1" && a.UserApproveId == getUserActive.UserActiveId).FirstOrDefault();
+            var getUser2 = _approvalRepository.GetAllApproval().Where(a => a.ApprovalStatusUser == "User2" && a.UserApproveId == getUserActive.UserActiveId).FirstOrDefault();
+            var getUser3 = _approvalRepository.GetAllApproval().Where(a => a.ApprovalStatusUser == "User3" && a.UserApproveId == getUserActive.UserActiveId).FirstOrDefault();
 
-            if (getUser1 != null)
+            if (getUser1 != null && getUser1.ApprovalStatusUser == "User1")
             {
-                if (getUserActive.UserActiveId == getUser1.UserApproveId)
+                var data = _approvalRepository.GetAllApproval().Where(u => u.UserApproveId == getUserActive.UserActiveId && getUser1.ApprovalStatusUser == "User1").ToList();
+
+                foreach (var item in data)
                 {
-                    var data = _approvalRepository.GetAllApproval().Where(u => u.UserApproveId == getUserActive.UserActiveId && u.Status != "Reject").ToList();
-                    return View(data);
+                    var remainingDay = DateTimeOffset.Now.Date - item.CreateDateTime.Date;
+                    var updateData = _approvalRepository.GetAllApproval().Where(u => u.ApprovalId == item.ApprovalId).FirstOrDefault();
+
+                    if (updateData.RemainingDay != 0)
+                    {
+                        updateData.RemainingDay = item.ExpiredDay - remainingDay.Days;
+
+                        _applicationDbContext.Approvals.Update(updateData);
+                        _applicationDbContext.SaveChanges();
+                    }
                 }
+
+                return View(data);
+            }
+            else if (getUser1 != null && getUser1.ApprovalStatusUser == "User1" &&getUser2 != null && getUser2.ApprovalStatusUser == "User2")
+            {
+                var data = _approvalRepository.GetAllApproval().Where(u => u.UserApproveId == getUserActive.UserActiveId && getUser1.ApprovalStatusUser == "User1" && getUser2.ApprovalStatusUser == "User2").ToList();
+
+                foreach (var item in data)
+                {
+                    var remainingDay = DateTimeOffset.Now.Date - item.CreateDateTime.Date;
+                    var updateData = _approvalRepository.GetAllApproval().Where(u => u.ApprovalId == item.ApprovalId).FirstOrDefault();
+
+                    if (updateData.RemainingDay != 0)
+                    {
+                        updateData.RemainingDay = item.ExpiredDay - remainingDay.Days;
+
+                        _applicationDbContext.Approvals.Update(updateData);
+                        _applicationDbContext.SaveChanges();
+                    }
+                }
+
+                return View(data);
+            }
+            else if (getUser1 != null && getUser1.ApprovalStatusUser == "User1" && getUser2 != null && getUser2.ApprovalStatusUser == "User2" && getUser3 != null && getUser3.ApprovalStatusUser == "User3")
+            {
+                var data = _approvalRepository.GetAllApproval().Where(u => u.UserApproveId == getUserActive.UserActiveId && getUser1.ApprovalStatusUser == "User1" && getUser2.ApprovalStatusUser == "User2" && getUser3.ApprovalStatusUser == "User3").ToList();
+
+                foreach (var item in data)
+                {
+                    var remainingDay = DateTimeOffset.Now.Date - item.CreateDateTime.Date;
+                    var updateData = _approvalRepository.GetAllApproval().Where(u => u.ApprovalId == item.ApprovalId).FirstOrDefault();
+
+                    if (updateData.RemainingDay != 0)
+                    {
+                        updateData.RemainingDay = item.ExpiredDay - remainingDay.Days;
+
+                        _applicationDbContext.Approvals.Update(updateData);
+                        _applicationDbContext.SaveChanges();
+                    }
+                }
+
+                return View(data);
             }
             else
             {
                 if (getUserLogin.Id == "5f734880-f3d9-4736-8421-65a66d48020e")
                 {
                     var data = _approvalRepository.GetAllApproval();
+
+                    foreach (var item in data)
+                    {
+                        var remainingDay = DateTimeOffset.Now.Date - item.CreateDateTime.Date;
+                        var updateData = _approvalRepository.GetAllApproval().Where(u => u.ApprovalId == item.ApprovalId).FirstOrDefault();
+
+                        if (updateData.RemainingDay != 0)
+                        {
+                            updateData.RemainingDay = item.ExpiredDay - remainingDay.Days;
+
+                            _applicationDbContext.Approvals.Update(updateData);
+                            _applicationDbContext.SaveChanges();
+                        }
+                    }
+
                     return View(data);
                 }
                 else
                 {
                     var data = _approvalRepository.GetAllApproval().Where(u => u.UserApproveId == getUserActive.UserActiveId && u.Status != "Waiting Approval" && u.Status != "Reject").ToList();
+
+                    foreach (var item in data)
+                    {
+                        var remainingDay = DateTimeOffset.Now.Date - item.CreateDateTime.Date;
+                        var updateData = _approvalRepository.GetAllApproval().Where(u => u.ApprovalId == item.ApprovalId).FirstOrDefault();
+
+                        if (updateData.RemainingDay != 0)
+                        {
+                            updateData.RemainingDay = item.ExpiredDay - remainingDay.Days;
+
+                            _applicationDbContext.Approvals.Update(updateData);
+                            _applicationDbContext.SaveChanges();
+                        }
+                    }
+
                     return View(data);
                 }
             }
-
-            return View();
         }
 
         [HttpPost]
@@ -144,7 +229,8 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
                 PurchaseRequestId = Approval.PurchaseRequestId,
                 PurchaseRequestNumber = Approval.PurchaseRequestNumber,
                 UserAccessId = Approval.UserAccessId,
-                DueDateId = Approval.DueDateId,
+                ExpiredDay = Approval.ExpiredDay,
+                RemainingDay = Approval.RemainingDay,
                 ExpiredDate = Approval.ExpiredDate,
                 UserApproveId = Approval.UserApproveId,
                 UserApprove = getUser.Email,
@@ -195,85 +281,203 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
 
                 var approval = await _approvalRepository.GetApprovalByIdNoTracking(viewModel.ApprovalId);
                 var checkPR = _purchaseRequestRepository.GetAllPurchaseRequest().Where(c => c.PurchaseRequestNumber == viewModel.PurchaseRequestNumber).FirstOrDefault();
-                var diffDate = DateTime.Now.Date - approval.CreateDateTime.Date;                
+                var diffDate = DateTimeOffset.Now.Date - approval.CreateDateTime.Date;                
 
                 if (checkPR != null)
                 {
-                    if (approval.ApprovalStatusUser == "User1")
+                    if (approval.ApprovalStatusUser == "User1" && checkPR.PurchaseRequestNumber == approval.PurchaseRequestNumber)
                     {
-                        var updateStatusUser1 = _approvalRepository.GetAllApproval().Where(c => c.ApprovalStatusUser == "User1").FirstOrDefault();
-                        if (updateStatusUser1 != null)
+                        var updateStatusUser1 = _approvalRepository.GetAllApproval().Where(c => c.ApprovalStatusUser == "User1" && c.PurchaseRequestId == viewModel.PurchaseRequestId).FirstOrDefault();
+                        if (updateStatusUser1.Status == "Waiting Approval")
                         {
                             updateStatusUser1.Status = viewModel.Status;
-                            updateStatusUser1.ApprovalDate = DateTime.Now;
+                            updateStatusUser1.ApprovalDate = DateTimeOffset.Now;
                             updateStatusUser1.ApproveBy = getUser.NamaUser;
                             updateStatusUser1.ApprovalTime = diffDate.Days.ToString() + " Day";
                             updateStatusUser1.Note = viewModel.Note;
 
                             _applicationDbContext.Entry(updateStatusUser1).State = EntityState.Modified;
+                            _applicationDbContext.SaveChanges();
                         }
 
-                        var updateStatusUser2 = _approvalRepository.GetAllApproval().Where(c => c.ApprovalStatusUser == "User2").FirstOrDefault();
-                        if (updateStatusUser2 != null) 
+                        if (viewModel.Status == "Approve")
                         {
-                            updateStatusUser2.Status = "User1Approve";
+                            var updateStatusUser2 = _approvalRepository.GetAllApproval().Where(c => c.ApprovalStatusUser == "User2" && c.PurchaseRequestId == viewModel.PurchaseRequestId).FirstOrDefault();
+                            if (updateStatusUser2 != null)
+                            {
+                                updateStatusUser2.Status = "User1Approve";
 
-                            _applicationDbContext.Entry(updateStatusUser2).State = EntityState.Modified;
+                                _applicationDbContext.Entry(updateStatusUser2).State = EntityState.Modified;
+                                _applicationDbContext.SaveChanges();
+                            }
+
+                            checkPR.ApproveStatusUser1 = viewModel.Status;
+
+                            _applicationDbContext.Entry(checkPR).State = EntityState.Modified;
+                            _applicationDbContext.SaveChanges();
                         }
-                        
-                        checkPR.ApproveStatusUser1 = viewModel.Status;
+                        else
+                        {
+                            checkPR.ApproveStatusUser1 = viewModel.Status;
+
+                            _applicationDbContext.Entry(checkPR).State = EntityState.Modified;
+                            _applicationDbContext.SaveChanges();
+                        }
                     }
-                    else if (approval.ApprovalStatusUser == "User2")
+                    else if (approval.ApprovalStatusUser == "User2" && checkPR.PurchaseRequestNumber == approval.PurchaseRequestNumber)
                     {
-                        var updateStatusUser2 = _approvalRepository.GetAllApproval().Where(c => c.ApprovalStatusUser == "User2").FirstOrDefault();
-                        if (updateStatusUser2 != null)
+                        var updateStatusUser2 = _approvalRepository.GetAllApproval().Where(c => c.ApprovalStatusUser == "User2" && c.PurchaseRequestId == viewModel.PurchaseRequestId).FirstOrDefault();
+                        if (updateStatusUser2.Status == "User1Approve")
                         {
                             updateStatusUser2.Status = viewModel.Status;
-                            updateStatusUser2.ApprovalDate = DateTime.Now;
+                            updateStatusUser2.ApprovalDate = DateTimeOffset.Now;
                             updateStatusUser2.ApproveBy = getUser.NamaUser;
                             updateStatusUser2.ApprovalTime = diffDate.Days.ToString() + " Day";
                             updateStatusUser2.Note = viewModel.Note;
 
                             _applicationDbContext.Entry(updateStatusUser2).State = EntityState.Modified;
+                            _applicationDbContext.SaveChanges();
                         }
 
-                        var updateStatusUser3 = _approvalRepository.GetAllApproval().Where(c => c.ApprovalStatusUser == "User3").FirstOrDefault();
-                        if (updateStatusUser3 != null)
+                        if (viewModel.Status == "Approve")
                         {
-                            updateStatusUser3.Status = "User2Approve";
+                            var updateStatusUser3 = _approvalRepository.GetAllApproval().Where(c => c.ApprovalStatusUser == "User3" && c.PurchaseRequestId == viewModel.PurchaseRequestId).FirstOrDefault();
+                            if (updateStatusUser3 != null)
+                            {
+                                updateStatusUser3.Status = "User2Approve";
 
-                            _applicationDbContext.Entry(updateStatusUser3).State = EntityState.Modified;
-                        }                        
-                        checkPR.ApproveStatusUser2 = viewModel.Status;
+                                _applicationDbContext.Entry(updateStatusUser3).State = EntityState.Modified;
+                                _applicationDbContext.SaveChanges();
+                            }
+                            checkPR.ApproveStatusUser2 = viewModel.Status;
+
+                            _applicationDbContext.Entry(checkPR).State = EntityState.Modified;
+                            _applicationDbContext.SaveChanges();
+                        }
+                        else
+                        {
+                            checkPR.ApproveStatusUser2 = viewModel.Status;
+
+                            _applicationDbContext.Entry(checkPR).State = EntityState.Modified;
+                            _applicationDbContext.SaveChanges();
+                        }
                     }
-                    else if (approval.ApprovalStatusUser == "User3")
+                    else if (approval.ApprovalStatusUser == "User3" && checkPR.PurchaseRequestNumber == approval.PurchaseRequestNumber)
                     {
-                        var updateStatusUser3 = _approvalRepository.GetAllApproval().Where(c => c.ApprovalStatusUser == "User3").FirstOrDefault();
-                        if (updateStatusUser3 != null)
+                        var updateStatusUser3 = _approvalRepository.GetAllApproval().Where(c => c.ApprovalStatusUser == "User3" && c.PurchaseRequestId == viewModel.PurchaseRequestId).FirstOrDefault();
+                        if (updateStatusUser3.Status == "User2Approve")
                         {
                             updateStatusUser3.Status = viewModel.Status;
-                            updateStatusUser3.ApprovalDate = DateTime.Now;
+                            updateStatusUser3.ApprovalDate = DateTimeOffset.Now;
                             updateStatusUser3.ApproveBy = getUser.NamaUser;
                             updateStatusUser3.ApprovalTime = diffDate.Days.ToString() + " Day";
                             updateStatusUser3.Note = viewModel.Note;
 
                             _applicationDbContext.Entry(updateStatusUser3).State = EntityState.Modified;
+                            _applicationDbContext.SaveChanges();
                         }
                         checkPR.ApproveStatusUser3 = viewModel.Status;
+
+                        _applicationDbContext.Entry(checkPR).State = EntityState.Modified;
+                        _applicationDbContext.SaveChanges();
                     }
 
+                    //Jika semua sudah Approve langsung Generate Purchase Order
                     if (checkPR.ApproveStatusUser1 == "Approve" && checkPR.ApproveStatusUser2 == "Approve" && checkPR.ApproveStatusUser3 == "Approve")
                     {
                         checkPR.Status = viewModel.Status;
                         checkPR.Note = viewModel.Note;
-                    }                    
 
-                    _approvalRepository.Update(approval);
-                    _applicationDbContext.Entry(checkPR).State = EntityState.Modified;                    
-                    _applicationDbContext.SaveChanges();
-                }                
+                        _applicationDbContext.Entry(checkPR).State = EntityState.Modified;
+                        _applicationDbContext.SaveChanges();
 
-                TempData["SuccessMessage"] = "Saved";
+                        //Proses Generate Purchase Order
+                        var po = new PurchaseOrder 
+                        {
+                            CreateDateTime = DateTimeOffset.Now,
+                            CreateBy = new Guid(getUser.Id),
+                            PurchaseRequestId = checkPR.PurchaseRequestId,
+                            PurchaseRequestNumber = checkPR.PurchaseRequestNumber,
+                            UserAccessId = getUser.Id.ToString(),
+                            ExpiredDate = checkPR.ExpiredDate,
+                            UserApprove1Id = checkPR.UserApprove1Id,
+                            UserApprove2Id = checkPR.UserApprove2Id,
+                            UserApprove3Id = checkPR.UserApprove3Id,
+                            ApproveStatusUser1 = checkPR.ApproveStatusUser1,
+                            ApproveStatusUser2 = checkPR.ApproveStatusUser2,
+                            ApproveStatusUser3 = checkPR.ApproveStatusUser3,
+                            TermOfPaymentId = checkPR.TermOfPaymentId,
+                            Status = "In Order",
+                            QtyTotal = checkPR.QtyTotal,
+                            GrandTotal = Math.Truncate(checkPR.GrandTotal),
+                            Note = checkPR.Note
+                        };
+
+                        var ItemsList = new List<PurchaseOrderDetail>();
+
+                        foreach (var item in checkPR.PurchaseRequestDetails)
+                        {
+                            ItemsList.Add(new PurchaseOrderDetail
+                            {
+                                CreateDateTime = DateTimeOffset.Now,
+                                CreateBy = new Guid(getUser.Id),
+                                ProductNumber = item.ProductNumber,
+                                ProductName = item.ProductName,
+                                Supplier = item.Supplier,
+                                Measurement = item.Measurement,
+                                Qty = item.Qty,
+                                Price = Math.Truncate(item.Price),
+                                Discount = item.Discount,
+                                SubTotal = Math.Truncate(item.SubTotal)
+                            });
+                        }
+
+                        po.PurchaseOrderDetails = ItemsList;                        
+
+                        var dateNow = DateTimeOffset.Now;
+                        var setDateNow = DateTimeOffset.Now.ToString("yyMMdd");
+
+                        var lastCode = _purchaseOrderRepository.GetAllPurchaseOrder().Where(d => d.CreateDateTime.ToString("yyMMdd") == dateNow.ToString("yyMMdd")).OrderByDescending(k => k.PurchaseOrderNumber).FirstOrDefault();
+                        if (lastCode == null)
+                        {
+                            po.PurchaseOrderNumber = "PO" + setDateNow + "0001";
+                        }
+                        else
+                        {
+                            var lastCodeTrim = lastCode.PurchaseOrderNumber.Substring(2, 6);
+
+                            if (lastCodeTrim != setDateNow)
+                            {
+                                po.PurchaseOrderNumber = "PO" + setDateNow + "0001";
+                            }
+                            else
+                            {
+                                po.PurchaseOrderNumber = "PO" + setDateNow + (Convert.ToInt32(lastCode.PurchaseOrderNumber.Substring(9, lastCode.PurchaseOrderNumber.Length - 9)) + 1).ToString("D4");
+                            }
+                        }
+
+                        //Update Status PR Menjadi Nomor PO
+                        var updatePurchaseRequest = _purchaseRequestRepository.GetAllPurchaseRequest().Where(c => c.PurchaseRequestId == viewModel.PurchaseRequestId).FirstOrDefault();
+                        if (updatePurchaseRequest != null)
+                        {
+                            {
+                                updatePurchaseRequest.Status = po.PurchaseOrderNumber;
+                            };
+                            _applicationDbContext.Entry(updatePurchaseRequest).State = EntityState.Modified;
+                            _applicationDbContext.SaveChanges();
+                        }
+
+                        _purchaseOrderRepository.Tambah(po);
+
+                        _approvalRepository.Update(approval);
+                        _applicationDbContext.SaveChanges();
+
+                        TempData["SuccessMessage"] = "Approve And Success Create Purchase Order";
+                        return RedirectToAction("Index", "Approval");
+                    }                   
+                }
+
+                TempData["SuccessMessage"] = "Approve";
                 return RedirectToAction("Index", "Approval");
             }
 

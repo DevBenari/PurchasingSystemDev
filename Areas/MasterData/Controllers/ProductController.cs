@@ -73,11 +73,9 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
         public async Task<IActionResult> Index()
         {
             ViewBag.Active = "MasterData";
-
             var data = _productRepository.GetAllProduct();
             return View(data);
         }
-
 
         [HttpPost]
         [AllowAnonymous]
@@ -137,8 +135,6 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
             var setDateNow = DateTimeOffset.Now.ToString("yyMMdd");
 
             var lastCode = _productRepository.GetAllProduct().Where(d => d.CreateDateTime.ToString("yyMMdd") == dateNow.ToString("yyMMdd")).OrderByDescending(k => k.ProductCode).FirstOrDefault();
-
-
             if (lastCode == null)
             {
                 vm.ProductCode = "PDC" + setDateNow + "0001";
