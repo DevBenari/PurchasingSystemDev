@@ -68,8 +68,17 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
         public async Task<IActionResult> Index()
         {
             ViewBag.Active = "MasterData";
-            var data = _productRepository.GetAllProduct();
-            return View(data);
+            var getUser = _userActiveRepository.GetAllUserLogin().Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
+
+            var purchaserequest = _productRepository.GetAllProduct().Where(a => Convert.ToString(a.CreateBy) == getUser.Id).ToList();
+            var purchaseorder = _productRepository.GetAllProduct().Where(a => Convert.ToString(a.CreateBy) == getUser.Id).ToList();
+            if (purchaserequest.Count != 0)
+            {
+                return View(purchaserequest);
+            }
+
+            return View();
+
         }
 
         [HttpPost]
