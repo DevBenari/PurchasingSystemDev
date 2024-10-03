@@ -12,6 +12,7 @@ using PurchasingSystemApps.Data;
 using PurchasingSystemApps.Models;
 using PurchasingSystemApps.Repositories;
 using System.Net.Http;
+using System.Text;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace PurchasingSystemApps.Areas.MasterData.Controllers
@@ -193,6 +194,9 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
                     if (result == null)
                     {
                         _productRepository.Tambah(Product);
+
+                        await SendProductToExternalApiDummy(vm);
+                        //await SendProductToExternalApi(vm);
                         TempData["SuccessMessage"] = "Name " + vm.ProductName + " Saved";
                         return RedirectToAction("Index", "Product");
                     }
@@ -231,6 +235,82 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
                 return View(vm);
             }                       
         }
+
+        // Fungsi untuk mengirim data ke aplikasi lain melalui API eksternal
+        private async Task SendProductToExternalApiDummy(ProductViewModel vm)
+        {
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("https://localhost:7133"); 
+
+                // Data dummy JSON yang akan dikirim
+                var dummyData = new
+                {
+                    CreateDateTime = "2024-10-02T09:00:00Z",
+                    CreateBy = "5F734880-F3D9-4736-8421-65A66D48020E",
+                    ProductId = vm.ProductId,
+                    ProductCode = vm.ProductCode,
+                    ProductName = vm.ProductName,
+                    PrincipalId = "6FA3681A-CC47-476A-78EB-08DCAD88215F",
+                    CategoryId = "B5F47C7F-1681-47CE-4A97-08DCACC980CC",
+                    MeasurementId = "AFB04BA4-5DCE-4394-7BCB-08DCACC80199",
+                    DiscountId = "F75BB704-4A30-4C0A-E8E6-08DCACC5243F",
+                    WarehouseLocationId = "4218A796-79B1-4F59-7767-08DCAE28EBBE",
+                    MinStock = vm.MinStock,
+                    MaxStock = vm.MaxStock,
+                    BufferStock = vm.BufferStock,
+                    Stock = vm.Stock,
+                    Cogs = vm.Cogs,
+                    BuyPrice = vm.BuyPrice,
+                    RetailPrice = vm.RetailPrice,
+                    StorageLocation = vm.StorageLocation,
+                    RackNumber = vm.RackNumber,
+                    Note = vm.Note
+                };
+
+                // Convert data dummy ke JSON
+                var jsonContent = new StringContent(JsonConvert.SerializeObject(dummyData), Encoding.UTF8, "application/json");
+
+                // Kirim POST request ke API lokal
+                var response = await client.PostAsync("/MasterData/Product/InsertProduct/insert", jsonContent);
+
+                // Cek apakah request berhasil
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Data dummy berhasil dikirim ke API.");
+                }
+                else
+                {
+                    Console.WriteLine($"Gagal mengirim data dummy ke API. Status code: {response.StatusCode}");
+                }
+            }
+        }
+
+        //private async Task SendProductToExternalApi(ProductViewModel vm)
+        //{
+        //    using (var client = new HttpClient())
+        //    {
+        //        client.BaseAddress = new Uri("https://localhost:7133/MasterData/Product/InsertProduct/insert"); // Ganti dengan URL API eksternal
+
+        //        // Buat body JSON untuk API
+        //        var jsonContent = new StringContent(JsonConvert.SerializeObject(vm), Encoding.UTF8, "application/json");
+
+        //        // Lakukan request POST
+        //        var response = await client.PostAsync("/api/products", jsonContent); // Ganti dengan endpoint API eksternal
+
+        //        if (response.IsSuccessStatusCode)
+        //        {
+        //            // Jika berhasil, Anda bisa log atau memberikan notifikasi sukses
+        //            Console.WriteLine("Product successfully sent to external API.");
+        //        }
+        //        else
+        //        {
+        //            // Jika gagal, bisa ditangani di sini (misal logging)
+        //            Console.WriteLine("Failed to send product to external API.");
+        //        }
+        //    }
+        //}
+        //End Post Api
 
         [HttpGet]
         [AllowAnonymous]

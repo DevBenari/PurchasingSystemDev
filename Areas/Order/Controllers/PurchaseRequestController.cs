@@ -335,6 +335,7 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
                 await _hubContext.Clients.All.SendAsync("UpdateDataLogger", loggerDataJson);
 
                 //End Signal R
+
                 if (model.UserApprove1Id != null) 
                 {
                     var approval = new Approval
