@@ -4,12 +4,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using PurchasingSystemApps.Areas.MasterData.Models;
 using PurchasingSystemApps.Areas.MasterData.Repositories;
 using PurchasingSystemApps.Areas.MasterData.ViewModels;
 using PurchasingSystemApps.Data;
 using PurchasingSystemApps.Models;
 using PurchasingSystemApps.Repositories;
+using System.Net.Http;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace PurchasingSystemApps.Areas.MasterData.Controllers
@@ -29,6 +31,7 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
         private readonly IMeasurementRepository _measurementRepository;
         private readonly IDiscountRepository _discountRepository;
         private readonly IWarehouseLocationRepository _warehouseLocationRepository;
+        private readonly HttpClient _httpClient;
 
         private readonly IHostingEnvironment _hostingEnvironment;
 
@@ -44,6 +47,7 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
             IMeasurementRepository measurementRepository,
             IDiscountRepository discountRepository,
             IWarehouseLocationRepository warehouseLocationRepository,
+            HttpClient httpClient,
 
             IHostingEnvironment hostingEnvironment
         )
@@ -59,6 +63,7 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
             _measurementRepository = measurementRepository;
             _discountRepository = discountRepository;
             _warehouseLocationRepository = warehouseLocationRepository;
+            _httpClient = httpClient;
 
             _hostingEnvironment = hostingEnvironment;
         }
@@ -68,18 +73,13 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
         public async Task<IActionResult> Index()
         {
             ViewBag.Active = "MasterData";
-            var getUser = _userActiveRepository.GetAllUserLogin().Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
+            ViewBag.tglAwalPencarian = tglAwalPencarian.ToString("dd MMMM yyyy");
+            ViewBag.tglAkhirPencarian = tglAkhirPencarian.ToString("dd MMMM yyyy");
 
-            var purchaserequest = _productRepository.GetAllProduct().Where(a => Convert.ToString(a.CreateBy) == getUser.Id).ToList();
-            var purchaseorder = _productRepository.GetAllProduct().Where(a => Convert.ToString(a.CreateBy) == getUser.Id).ToList();
-            if (purchaserequest.Count != 0)
-            {
-                return View(purchaserequest);
-            }
-
-            return View();
-
+            var data = _productRepository.GetAllProduct().Where(r => r.CreateDateTime.Date >= tglAwalPencarian && r.CreateDateTime.Date <= tglAkhirPencarian).ToList();
+            return View(data);
         }
+
 
         [HttpPost]
         [AllowAnonymous]
@@ -139,6 +139,8 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
             var setDateNow = DateTimeOffset.Now.ToString("yyMMdd");
 
             var lastCode = _productRepository.GetAllProduct().Where(d => d.CreateDateTime.ToString("yyMMdd") == dateNow.ToString("yyMMdd")).OrderByDescending(k => k.ProductCode).FirstOrDefault();
+
+
             if (lastCode == null)
             {
                 vm.ProductCode = "PDC" + setDateNow + "0001";
