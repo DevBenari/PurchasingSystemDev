@@ -12,12 +12,13 @@ namespace PurchasingSystemApps.Areas.Order.Models
         public Guid? PurchaseRequestId { get; set; }
         public string PurchaseRequestNumber { get; set; }
         public string UserAccessId { get; set; } //Dibuat Oleh
-        public Guid? DueDateId { get; set; }
-        public DateTime ExpiredDate { get; set; }
+        public int ExpiredDay { get; set; }
+        public int RemainingDay { get; set; }
+        public DateTimeOffset ExpiredDate { get; set; }
         public Guid? UserApproveId { get; set; }
         public string ApproveBy { get; set; }
         public string? ApprovalTime { get; set; }
-        public DateTime ApprovalDate { get; set; }
+        public DateTimeOffset ApprovalDate { get; set; }
         public string? ApprovalStatusUser { get; set; }
         public string Status { get; set; }
         public string? Note { get; set; }

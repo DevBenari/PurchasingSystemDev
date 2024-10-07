@@ -228,7 +228,7 @@
                             <span asp-validation-for="TermOfPaymentId" class="error"></span>
                         </div>
                     </div>
-                    <div class="form-group row">
+                    @*<div class="form-group row">
                         <label class="col-sm-2 col-form-label" asp-for="DueDateId">
                             Order Expired
                         </label>
@@ -238,7 +238,7 @@
                             </select>
                             <span asp-validation-for="DueDateId" class="error"></span>
                         </div>
-                    </div>
+                    </div>*@
                     <div class="form-group row">
                         <label class="col-sm-2 col-form-label" asp-for="Note">Note</label>
                         <div class="col-sm-10">
@@ -342,11 +342,11 @@
                                 <tbody></tbody>
                                 <tfoot>
                                     <tr>
-                                        <td colspan="5" class="text-right" hidden><b>Total Qty</b></td>
-                                        <td id="producttotalqty" class="text-center productTotalQty" hidden>0</td>
+                                        <td colspan="5" class="text-right"><b>Total Qty</b></td>
+                                        <td id="producttotalqty" class="text-center productTotalQty">0</td>
                                         <td colspan="2" class="text-right" hidden><b>Grand Total</b></td>
                                         <td id="productgrandtotal" class="text-right productGrandTotal" hidden>0</td>
-                                        <td hidden></td>
+                                        <td></td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -405,7 +405,7 @@
                             $("#productnumber").val(item.productCode);
                             $("#productname").val(item.productName);
                             $("#stock").val(item.stock);
-                            $("#Supplier").val(item.Supplier.SupplierName);
+                            $("#Supplier").val(item.supplier.supplierName);
                             $("#measure").val(item.measurement.measurementName);
                             $("#discount").val(item.discount.discountValue);
                             $("#price").val(item.buyPrice);
@@ -587,6 +587,7 @@
             var detail = {};
 
             var detailName = document.getElementsByClassName("row-productNumber");
+            var detailSupplier = document.getElementsByClassName("row-supplier");
             var detailNameProduct = document.getElementsByClassName("row-productName");
 
             $('#qty').keypress(function (e) {
@@ -667,7 +668,7 @@
 
                             var productNumber = $('#productnumber').val().trim();
                             var productName = $('#productname').val().trim();
-                            var Supplier = $('#Supplier').val().trim();
+                            var supplier = $('#Supplier').val().trim();
                             var measurement = $('#measure').val().trim();
                             var qty = parseInt($('#qty').val().trim());
                             var price = parseFloat($('#price').val().trim());
@@ -688,9 +689,22 @@
                                 if (detailName.length == 0) {
                                     checkDuplicate = undefined;
                                 }
-                                else if (detailName.length > 0 && detailName[i] != undefined) {
-                                    if (detailName[i].innerText != productNumber) {
+                                else if (detailName.length > 0 && detailName[i] != undefined) 
+                                {
+                                    if (detailName[i].innerText != productNumber && detailSupplier[i].innerText == supplier) {
                                         checkDuplicate = undefined;
+                                    }
+                                    else if (detailName[i].innerText != productNumber && detailSupplier[i].innerText != supplier) {
+                                        swal({
+                                            title: "Warning",
+                                            text: "Sorry, supplier " + supplier + " different from previous supplier",
+                                            type: "warning"
+                                        });
+
+                                        $('#produklist').select2('val', 'selectedIndex', 0);
+                                        $("#produklist").data('placeholder');
+                                        $("#productnumber,#productname,#stock,#Supplier,#measure,#qty,#price,#discount,#minstock,#maxstock,#bufferstock").val('');
+                                        return;
                                     }
                                     else {
                                         swal({
@@ -720,7 +734,7 @@
                                             <td class="row-index text-center"><p>${no}</p></td>
                                                         <td class="text-left row-productNumber"><input class="detProductNumber" asp-for="@Model.PurchaseRequestDetails[i].ProductNumber" type="hidden" value="${productNumber}">${productNumber}</td>
                                                         <td class="text-left row-productName"><input class="detProductName" asp-for="@Model.PurchaseRequestDetails[i].ProductName" type="hidden" value="${productName}">${productName}</td>
-                                                        <td class="text-left"><input class="detSupplier" asp-for="@Model.PurchaseRequestDetails[i].Supplier" type="hidden" value="${Supplier}">${Supplier}</td>
+                                                        <td class="text-left row-supplier"><input class="detSupplier" asp-for="@Model.PurchaseRequestDetails[i].Supplier" type="hidden" value="${supplier}">${supplier}</td>
                                                         <td class="text-left"><input class="detMeasurement" asp-for="@Model.PurchaseRequestDetails[i].Measurement" type="hidden" value="${measurement}">${measurement}</td>
                                                         <td class="text-center row-qty"><input class="detQty" asp-for="@Model.PurchaseRequestDetails[i].Qty" type="hidden" value="${qty}">${qty}</td>
                                                         <td class="text-right" hidden><input class="detPrice" asp-for="@Model.PurchaseRequestDetails[i].Price" type="hidden" value="${price}">${price}</td>
@@ -859,14 +873,7 @@
                     title: "Item successfully deleted",
                     type: "success"
                 });
-
-                $(this).closest('tr').remove();
-
-                swal({
-                    title: "Item successfully deleted",
-                    type: "success"
-                });
-
+                
                 if ($('#tbldetailpr tbody').children().children().length == 0) {
                     $('#tbldetailpr tbody').append(emptyRow);
                 } else {
@@ -902,6 +909,7 @@
                 var isAllValid = true;
                 var detailItemDone = [];
                 var detailDone = {};
+                var detailTable = $('#tbldetailpr tbody').children().children().length;
                 var Department1Id = $('#Department1List').find(":selected").val();
                 var Position1Id = $('#Position1List').find(":selected").val();
                 var UserApprove1Id = $('#UserApprove1List').find(":selected").val();
@@ -911,9 +919,7 @@
                 var Department3Id = $('#Department3List').find(":selected").val();
                 var Position3Id = $('#Position3List').find(":selected").val();
                 var UserApprove3Id = $('#UserApprove3List').find(":selected").val();
-                var DueDateId = $('#DueDateId').find(":selected").val();
-                var TermOfPayment = $('#TermOfPayment').find(":selected").val();
-                var detailTable = $('#tbldetailpr tbody').children().children().length;
+                var TermOfPayment = $('#TermOfPayment').find(":selected").val();                
 
                 if (detailTable == 1) { // 1 adalah isi dari keterangan pada table dihitung 1
                     swal({
@@ -931,8 +937,7 @@
                     $('#UserApprove2List').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');
                     $('#Department3List').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');
                     $('#Position3List').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');
-                    $('#UserApprove3List').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');
-                    $('#DueDateId').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');
+                    $('#UserApprove3List').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');                    
                     $('#TermOfPayment').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');
                     swal({
                         title: "Warning",
@@ -940,23 +945,15 @@
                         type: "warning"
                     });
                     isAllValid = false;
-                } else if (detailTable != 1 && TermOfPayment == '' && DueDateId != '' && Department1Id != '' && Position1Id != '' && UserApprove1Id != '' && Department2Id != '' && Position2Id != '' && UserApprove2Id != '' && Department3Id != '' && Position3Id != '' && UserApprove3Id != '') {
+                } else if (detailTable != 1 && TermOfPayment == ''  && Department1Id != '' && Position1Id != '' && UserApprove1Id != '' && Department2Id != '' && Position2Id != '' && UserApprove2Id != '' && Department3Id != '' && Position3Id != '' && UserApprove3Id != '') {
                     $('#TermOfPayment').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');
                     swal({
                         title: "Warning",
                         text: "Sorry, please select...",
                         type: "warning"
                     });
-                    isAllValid = false;
-                } else if (detailTable != 1 && TermOfPayment != '' && DueDateId == '' && Department1Id != '' && Position1Id != '' && UserApprove1Id != '' && Department2Id != '' && Position2Id != '' && UserApprove2Id != '' && Department3Id != '' && Position3Id != '' && UserApprove3Id != '') {
-                    $('#DueDateId').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');
-                    swal({
-                        title: "Warning",
-                        text: "Sorry, please select...",
-                        type: "warning"
-                    });
-                    isAllValid = false;
-                } else if (detailTable != 1 && TermOfPayment != '' && DueDateId != '' && Department1Id == '' && Position1Id != '' && UserApprove1Id != '' && Department2Id != '' && Position2Id != '' && UserApprove2Id != '' && Department3Id != '' && Position3Id != '' && UserApprove3Id != '') {
+                    isAllValid = false;                
+                } else if (detailTable != 1 && TermOfPayment != ''  && Department1Id == '' && Position1Id != '' && UserApprove1Id != '' && Department2Id != '' && Position2Id != '' && UserApprove2Id != '' && Department3Id != '' && Position3Id != '' && UserApprove3Id != '') {
                     $('#Department1List').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');
                     swal({
                         title: "Warning",
@@ -964,7 +961,7 @@
                         type: "warning"
                     });
                     isAllValid = false;
-                } else if (detailTable != 1 && TermOfPayment != '' && DueDateId != '' && Department1Id != '' && Position1Id == '' && UserApprove1Id != '' && Department2Id != '' && Position2Id != '' && UserApprove2Id != '' && Department3Id != '' && Position3Id != '' && UserApprove3Id != '') {
+                } else if (detailTable != 1 && TermOfPayment != '' && Department1Id != '' && Position1Id == '' && UserApprove1Id != '' && Department2Id != '' && Position2Id != '' && UserApprove2Id != '' && Department3Id != '' && Position3Id != '' && UserApprove3Id != '') {
                     $('#Position1List').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');
                     swal({
                         title: "Warning",
@@ -972,7 +969,7 @@
                         type: "warning"
                     });
                     isAllValid = false;
-                } else if (detailTable != 1 && TermOfPayment != '' && DueDateId != '' && Department1Id != '' && Position1Id != '' && UserApprove1Id == '' && Department2Id != '' && Position2Id != '' && UserApprove2Id != '' && Department3Id != '' && Position3Id != '' && UserApprove3Id != '') {
+                } else if (detailTable != 1 && TermOfPayment != '' && Department1Id != '' && Position1Id != '' && UserApprove1Id == '' && Department2Id != '' && Position2Id != '' && UserApprove2Id != '' && Department3Id != '' && Position3Id != '' && UserApprove3Id != '') {
                     $('#UserApprove1List').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');
                     swal({
                         title: "Warning",
@@ -980,7 +977,7 @@
                         type: "warning"
                     });
                     isAllValid = false;
-                } else if (detailTable != 1 && TermOfPayment != '' && DueDateId != '' && Department1Id != '' && Position1Id != '' && UserApprove1Id != '' && Department2Id == '' && Position2Id != '' && UserApprove2Id != '' && Department3Id != '' && Position3Id != '' && UserApprove3Id != '') {
+                } else if (detailTable != 1 && TermOfPayment != '' && Department1Id != '' && Position1Id != '' && UserApprove1Id != '' && Department2Id == '' && Position2Id != '' && UserApprove2Id != '' && Department3Id != '' && Position3Id != '' && UserApprove3Id != '') {
                     $('#Department2List').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');
                     swal({
                         title: "Warning",
@@ -988,7 +985,7 @@
                         type: "warning"
                     });
                     isAllValid = false;
-                } else if (detailTable != 1 && TermOfPayment != '' && DueDateId != '' && Department1Id != '' && Position1Id != '' && UserApprove1Id != '' && Department2Id != '' && Position2Id == '' && UserApprove2Id != '' && Department3Id != '' && Position3Id != '' && UserApprove3Id != '') {
+                } else if (detailTable != 1 && TermOfPayment != '' && Department1Id != '' && Position1Id != '' && UserApprove1Id != '' && Department2Id != '' && Position2Id == '' && UserApprove2Id != '' && Department3Id != '' && Position3Id != '' && UserApprove3Id != '') {
                     $('#Position2List').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');
                     swal({
                         title: "Warning",
@@ -996,7 +993,7 @@
                         type: "warning"
                     });
                     isAllValid = false;
-                } else if (detailTable != 1 && TermOfPayment != '' && DueDateId != '' && Department1Id != '' && Position1Id != '' && UserApprove1Id != '' && Department2Id != '' && Position2Id != '' && UserApprove2Id == '' && Department3Id != '' && Position3Id != '' && UserApprove3Id != '') {
+                } else if (detailTable != 1 && TermOfPayment != '' && Department1Id != '' && Position1Id != '' && UserApprove1Id != '' && Department2Id != '' && Position2Id != '' && UserApprove2Id == '' && Department3Id != '' && Position3Id != '' && UserApprove3Id != '') {
                     $('#UserApprove2List').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');
                     swal({
                         title: "Warning",
@@ -1004,7 +1001,7 @@
                         type: "warning"
                     });
                     isAllValid = false;
-                } else if (detailTable != 1 && TermOfPayment != '' && DueDateId != '' && Department1Id != '' && Position1Id != '' && UserApprove1Id != '' && Department2Id != '' && Position2Id != '' && UserApprove2Id != '' && Department3Id == '' && Position3Id != '' && UserApprove3Id != '') {
+                } else if (detailTable != 1 && TermOfPayment != '' && Department1Id != '' && Position1Id != '' && UserApprove1Id != '' && Department2Id != '' && Position2Id != '' && UserApprove2Id != '' && Department3Id == '' && Position3Id != '' && UserApprove3Id != '') {
                     $('#Department3List').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');
                     swal({
                         title: "Warning",
@@ -1012,7 +1009,7 @@
                         type: "warning"
                     });
                     isAllValid = false;
-                } else if (detailTable != 1 && TermOfPayment != '' && DueDateId != '' && Department1Id != '' && Position1Id != '' && UserApprove1Id != '' && Department2Id != '' && Position2Id != '' && UserApprove2Id != '' && Department3Id != '' && Position3Id == '' && UserApprove3Id != '') {
+                } else if (detailTable != 1 && TermOfPayment != '' && Department1Id != '' && Position1Id != '' && UserApprove1Id != '' && Department2Id != '' && Position2Id != '' && UserApprove2Id != '' && Department3Id != '' && Position3Id == '' && UserApprove3Id != '') {
                     $('#Position3List').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');
                     swal({
                         title: "Warning",
@@ -1020,7 +1017,7 @@
                         type: "warning"
                     });
                     isAllValid = false;
-                } else if (detailTable != 1 && TermOfPayment != '' && DueDateId != '' && Department1Id != '' && Position1Id != '' && UserApprove1Id != '' && Department2Id != '' && Position2Id != '' && UserApprove2Id != '' && Department3Id != '' && Position3Id != '' && UserApprove3Id == '') {
+                } else if (detailTable != 1 && TermOfPayment != '' && Department1Id != '' && Position1Id != '' && UserApprove1Id != '' && Department2Id != '' && Position2Id != '' && UserApprove2Id != '' && Department3Id != '' && Position3Id != '' && UserApprove3Id == '') {
                     $('#UserApprove3List').siblings('span.error').css('visibility', 'visible').html('<span style="color:red">Please select !</span>');
                     swal({
                         title: "Warning",
@@ -1039,14 +1036,13 @@
                     $('#UserApprove1List').siblings('span.error').css('visibility', 'hidden')
                     $('#UserApprove2List').siblings('span.error').css('visibility', 'hidden')
                     $('#UserApprove3List').siblings('span.error').css('visibility', 'hidden')
-                    $('#DueDateId').siblings('span.error').css('visibility', 'hidden')
                     $('#TermOfPayment').siblings('span.error').css('visibility', 'hidden')
 
                     $("#tbldetailpr").find("tbody").children("tr").each(function (index, element) {
                         //***Penggunaan nama detail harus sesuai dengan nama pada table. Misal kodeproduk,namaproduk,dst harus sama.
                         detailDone.productnumber = $(element).find(".detProductNumber").val();
                         detailDone.productname = $(element).find(".detProductName").val();
-                        detailDone.Supplier = $(element).find(".detSupplier").val();
+                        detailDone.supplier = $(element).find(".detSupplier").val();
                         detailDone.measurement = $(element).find(".detMeasurement").val();
                         detailDone.qty = $(element).find(".detQty").val();
                         detailDone.price = $(element).find(".detPrice").val();
@@ -1061,13 +1057,12 @@
                     var Department1Id = $('#Department1List').val();
                     var Position1Id = $('#Position1List').val();
                     var UserApprove1Id = $('#UserApprove1List').val();
-                    var Department1Id = $('#Department2List').val();
-                    var Position1Id = $('#Position2List').val();
+                    var Department2Id = $('#Department2List').val();
+                    var Position2Id = $('#Position2List').val();
                     var UserApprove2Id = $('#UserApprove2List').val();
-                    var Department1Id = $('#Department3List').val();
-                    var Position1Id = $('#Position3List').val();
+                    var Department3Id = $('#Department3List').val();
+                    var Position3Id = $('#Position3List').val();
                     var UserApprove3Id = $('#UserApprove3List').val();
-                    var DueDateId = $('#DueDateId').val();
                     var TermOfPaymentId = $('#TermOfPayment').val();
                     var Status = $('#status').val();
                     var QtyTotal = $('.productTotalQty').text();
@@ -1089,7 +1084,6 @@
                     dataPost.Department3Id = Department3Id;
                     dataPost.Position3Id = Position3Id;
                     dataPost.UserApprove3Id = UserApprove3Id;
-                    dataPost.DueDateId = DueDateId;
                     dataPost.TermOfPaymentId = TermOfPaymentId;
                     dataPost.Status = Status;
                     dataPost.QtyTotal = QtyTotal;

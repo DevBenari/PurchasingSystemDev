@@ -11,6 +11,7 @@ using PurchasingSystemApps.Areas.MasterData.ViewModels;
 using PurchasingSystemApps.Data;
 using PurchasingSystemApps.Models;
 using PurchasingSystemApps.Repositories;
+using System.Windows.Forms;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace PurchasingSystemApps.Areas.MasterData.Controllers
@@ -54,6 +55,12 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
 
             _hostingEnvironment = hostingEnvironment;
         }
+
+        //public JsonResult LoadLeadTime(Guid Id)
+        //{
+        //    var leadtime = _applicationDbContext.Suppliers.Where(p => p.LeadTimeId == Id).ToList();
+        //    return Json(new SelectList(leadtime, "LeadTimeId", "LeadTimeValue"));
+        //}
 
         [HttpGet]
         [AllowAnonymous]
@@ -123,7 +130,51 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
                 {
                     product.UpdateDateTime = DateTime.Now;
                     product.UpdateBy = new Guid(getUser.Id);
-                    product.BufferStock = (vm.MaxRequest - vm.AverageRequest) * leadtime.LeadTimeValue;
+
+                    if (vm.CalculateBaseOn == "Daily")
+                    {
+                        int daily = 1;
+
+                        product.BufferStock = ((vm.MaxRequest / daily) - vm.AverageRequest) * leadtime.LeadTimeValue;
+
+                        if (product.BufferStock < 0)
+                        {
+                            TempData["WarningMessage"] = "Sorry, the calculation is incorrect !!!";
+                            ViewBag.Product = new SelectList(await _productRepository.GetProducts(), "ProductId", "ProductName", SortOrder.Ascending);
+                            ViewBag.Supplier = new SelectList(await _SupplierRepository.GetSuppliers(), "SupplierId", "SupplierName", SortOrder.Ascending);
+                            ViewBag.LeadTime = new SelectList(await _leadTimeRepository.GetLeadTimes(), "LeadTimeId", "LeadTimeValue", SortOrder.Ascending);
+                            return View(vm);
+                        }
+                    }
+                    else if (vm.CalculateBaseOn == "Weekly")
+                    {
+                        int weekly = 7;
+                        product.BufferStock = ((vm.MaxRequest / weekly) - vm.AverageRequest) * leadtime.LeadTimeValue;
+
+                        if (product.BufferStock < 0)
+                        {
+                            TempData["WarningMessage"] = "Sorry, the calculation is incorrect !!!";
+                            ViewBag.Product = new SelectList(await _productRepository.GetProducts(), "ProductId", "ProductName", SortOrder.Ascending);
+                            ViewBag.Supplier = new SelectList(await _SupplierRepository.GetSuppliers(), "SupplierId", "SupplierName", SortOrder.Ascending);
+                            ViewBag.LeadTime = new SelectList(await _leadTimeRepository.GetLeadTimes(), "LeadTimeId", "LeadTimeValue", SortOrder.Ascending);
+                            return View(vm);
+                        }
+                    }
+                    else if (vm.CalculateBaseOn == "Monthly")
+                    {
+                        int monthly = 30;
+                        product.BufferStock = ((vm.MaxRequest / monthly) - vm.AverageRequest) * leadtime.LeadTimeValue;
+
+                        if (product.BufferStock < 0)
+                        {
+                            TempData["WarningMessage"] = "Sorry, the calculation is incorrect !!!";
+                            ViewBag.Product = new SelectList(await _productRepository.GetProducts(), "ProductId", "ProductName", SortOrder.Ascending);
+                            ViewBag.Supplier = new SelectList(await _SupplierRepository.GetSuppliers(), "SupplierId", "SupplierName", SortOrder.Ascending);
+                            ViewBag.LeadTime = new SelectList(await _leadTimeRepository.GetLeadTimes(), "LeadTimeId", "LeadTimeValue", SortOrder.Ascending);
+                            return View(vm);
+                        }
+                    }
+
                     product.MinStock = (vm.AverageRequest * leadtime.LeadTimeValue) + product.BufferStock;
                     product.MaxStock = 2 * (vm.AverageRequest * leadtime.LeadTimeValue) + product.BufferStock;
 
@@ -132,6 +183,9 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
                 else
                 {
                     TempData["WarningMessage"] = "Data not found !!!";
+                    ViewBag.Product = new SelectList(await _productRepository.GetProducts(), "ProductId", "ProductName", SortOrder.Ascending);
+                    ViewBag.Supplier = new SelectList(await _SupplierRepository.GetSuppliers(), "SupplierId", "SupplierName", SortOrder.Ascending);
+                    ViewBag.LeadTime = new SelectList(await _leadTimeRepository.GetLeadTimes(), "LeadTimeId", "LeadTimeValue", SortOrder.Ascending);
                     return View(vm);
                 }
 
@@ -174,9 +228,50 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
 
                     if (product != null)
                     {
-                        product.UpdateDateTime = DateTime.Now;
-                        product.UpdateBy = new Guid(getUser.Id);
-                        product.BufferStock = (vm.MaxRequest - vm.AverageRequest) * leadtime.LeadTimeValue;
+                        if (vm.CalculateBaseOn == "Daily")
+                        {
+                            int daily = 1;
+
+                            product.BufferStock = ((vm.MaxRequest / daily) - vm.AverageRequest) * leadtime.LeadTimeValue;
+
+                            if (product.BufferStock < 0)
+                            {
+                                TempData["WarningMessage"] = "Sorry, the calculation is incorrect !!!";
+                                ViewBag.Product = new SelectList(await _productRepository.GetProducts(), "ProductId", "ProductName", SortOrder.Ascending);
+                                ViewBag.Supplier = new SelectList(await _SupplierRepository.GetSuppliers(), "SupplierId", "SupplierName", SortOrder.Ascending);
+                                ViewBag.LeadTime = new SelectList(await _leadTimeRepository.GetLeadTimes(), "LeadTimeId", "LeadTimeValue", SortOrder.Ascending);
+                                return View(vm);
+                            }
+                        }
+                        else if (vm.CalculateBaseOn == "Weekly")
+                        {
+                            int weekly = 7;
+                            product.BufferStock = ((vm.MaxRequest / weekly) - vm.AverageRequest) * leadtime.LeadTimeValue;
+
+                            if (product.BufferStock < 0)
+                            {
+                                TempData["WarningMessage"] = "Sorry, the calculation is incorrect !!!";
+                                ViewBag.Product = new SelectList(await _productRepository.GetProducts(), "ProductId", "ProductName", SortOrder.Ascending);
+                                ViewBag.Supplier = new SelectList(await _SupplierRepository.GetSuppliers(), "SupplierId", "SupplierName", SortOrder.Ascending);
+                                ViewBag.LeadTime = new SelectList(await _leadTimeRepository.GetLeadTimes(), "LeadTimeId", "LeadTimeValue", SortOrder.Ascending);
+                                return View(vm);
+                            }
+                        }
+                        else if (vm.CalculateBaseOn == "Monthly")
+                        {
+                            int monthly = 30;
+                            product.BufferStock = ((vm.MaxRequest / monthly) - vm.AverageRequest) * leadtime.LeadTimeValue;
+
+                            if (product.BufferStock < 0)
+                            {
+                                TempData["WarningMessage"] = "Sorry, the calculation is incorrect !!!";
+                                ViewBag.Product = new SelectList(await _productRepository.GetProducts(), "ProductId", "ProductName", SortOrder.Ascending);
+                                ViewBag.Supplier = new SelectList(await _SupplierRepository.GetSuppliers(), "SupplierId", "SupplierName", SortOrder.Ascending);
+                                ViewBag.LeadTime = new SelectList(await _leadTimeRepository.GetLeadTimes(), "LeadTimeId", "LeadTimeValue", SortOrder.Ascending);
+                                return View(vm);
+                            }
+                        }
+
                         product.MinStock = (vm.AverageRequest * leadtime.LeadTimeValue) + product.BufferStock;
                         product.MaxStock = 2 * (vm.AverageRequest * leadtime.LeadTimeValue) + product.BufferStock;
 
@@ -186,6 +281,9 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
                     else
                     {
                         TempData["WarningMessage"] = "Data not found !!!";
+                        ViewBag.Product = new SelectList(await _productRepository.GetProducts(), "ProductId", "ProductName", SortOrder.Ascending);
+                        ViewBag.Supplier = new SelectList(await _SupplierRepository.GetSuppliers(), "SupplierId", "SupplierName", SortOrder.Ascending);
+                        ViewBag.LeadTime = new SelectList(await _leadTimeRepository.GetLeadTimes(), "LeadTimeId", "LeadTimeValue", SortOrder.Ascending);
                         return View(vm);
                     }                    
                 }                
@@ -200,6 +298,9 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
                 else
                 {
                     TempData["WarningMessage"] = "Data already Exist !!!";
+                    ViewBag.Product = new SelectList(await _productRepository.GetProducts(), "ProductId", "ProductName", SortOrder.Ascending);
+                    ViewBag.Supplier = new SelectList(await _SupplierRepository.GetSuppliers(), "SupplierId", "SupplierName", SortOrder.Ascending);
+                    ViewBag.LeadTime = new SelectList(await _leadTimeRepository.GetLeadTimes(), "LeadTimeId", "LeadTimeValue", SortOrder.Ascending);
                     return View(vm);
                 }
             }

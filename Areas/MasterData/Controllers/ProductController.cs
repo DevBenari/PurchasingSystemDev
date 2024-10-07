@@ -73,10 +73,7 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
         public async Task<IActionResult> Index()
         {
             ViewBag.Active = "MasterData";
-            ViewBag.tglAwalPencarian = tglAwalPencarian.ToString("dd MMMM yyyy");
-            ViewBag.tglAkhirPencarian = tglAkhirPencarian.ToString("dd MMMM yyyy");
-
-            var data = _productRepository.GetAllProduct().Where(r => r.CreateDateTime.Date >= tglAwalPencarian && r.CreateDateTime.Date <= tglAkhirPencarian).ToList();
+            var data = _productRepository.GetAllProduct();
             return View(data);
         }
 
