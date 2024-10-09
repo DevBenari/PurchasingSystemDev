@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -66,12 +67,13 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
+        [Authorize]
         public async Task<IActionResult> Index()
         {
+
             ViewBag.Active = "MasterData";
             var data = _userActiveRepository.GetAllUser();
-            return View(data);
+              return View(data);
         }
 
         [HttpPost]
@@ -240,6 +242,13 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
         {
             ViewBag.Department = new SelectList(await _departmentRepository.GetDepartments(), "DepartmentId", "DepartmentName", SortOrder.Ascending);
             ViewBag.Position = new SelectList(await _positionRepository.GetPositions(), "PositionId", "PositionName", SortOrder.Ascending);
+
+            //var userLogin = HttpContext.Session.GetString("KodeUser");
+
+            //if (userLogin == null)
+            //{
+            //    return RedirectToAction("Index", "Home");
+            //}
 
             ViewBag.Active = "MasterData";
             var user = await _userActiveRepository.GetUserById(Id);

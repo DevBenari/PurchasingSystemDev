@@ -72,9 +72,11 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
+ 
             ViewBag.Active = "MasterData";
             var data = _productRepository.GetAllProduct();
             return View(data);
+         
         }
 
 

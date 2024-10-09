@@ -47,6 +47,9 @@ namespace PurchasingSystemApps.Controllers
         public async Task<IActionResult> Index()
         {
             ViewBag.Active = "Dashboard";
+
+            
+
             var countUser = _applicationDbContext.UserActives.GroupBy(u => u.UserActiveId).Select(y => new
             {
                 UserActiveId = y.Key,
@@ -259,6 +262,8 @@ namespace PurchasingSystemApps.Controllers
                 await _userManager.UpdateAsync(user);
             }
 
+            // HttpContext.session.Clear untuk menghapus session data pengguna tidak lagi tersimpan
+            HttpContext.Session.Clear();
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }

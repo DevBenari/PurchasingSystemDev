@@ -1,4 +1,5 @@
 using FastReport.Data;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -47,6 +48,30 @@ builder.Services.AddMvc(options =>
 {
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
 });
+
+// konfigurasi session 
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromSeconds(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// konfigurasi cookie Authentication 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.ExpireTimeSpan = TimeSpan.FromSeconds(30);
+    options.SlidingExpiration = false;
+
+});
+
+//builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+//    .AddCookie(options =>
+//    {
+//        options.ExpireTimeSpan = TimeSpan.FromSeconds(30);
+//        options.SlidingExpiration = false;
+//    });
+
 
 AddScope();
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, ApplicationUserClaims>();
@@ -101,6 +126,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+
+
+
 //Tambahan Baru
 app.UseSession();
 app.UseAuthentication();
@@ -122,6 +150,20 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllerRoute(
         name: "MyArea",
         pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+});
+
+//   konfigurasi end session 
+app.Use(async (context, next) =>
+{
+    if (!context.Session.Keys.Any())
+    {
+        await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+        context.Response.Cookies.Delete(".AspNetCore.Identity.Application");
+        context.Response.Redirect("./Lockout");
+        return ;
+    }
+    await next();
 });
 
 app.MapRazorPages();

@@ -322,6 +322,10 @@
             @RenderSection("Scripts", required: true)
         }
 
+        
+
+
+
         <!-- Control Sidebar -->
         <aside class="control-sidebar control-sidebar-dark">
             <!-- Control sidebar content goes here -->
@@ -385,6 +389,105 @@
     @*UI Normal*@
     <script src="https://cdn.datatables.net/2.0.1/js/dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/2.0.1/js/dataTables.bootstrap4.min.js"></script>
+
+    <!-- membuat session message-->
+
+<!--
+                <script>
+
+            let warningTime = 4 * 60 * 100;
+
+            let sessionExpireTime = 5 * 60 * 1000;
+
+            function extendSession() {
+                fetch("/", {
+                    method: 'POST'
+                }).then(Response => {
+                    if (reponse.ok) {
+                        Swal.fire({
+                            title: "Session Diperpanjang",
+                            text: "Waktu session Anda telah diperpanjang",
+                            icon: "success"
+                        });
+                        resetTimer():
+                    }
+                    else {
+                        Swal.fire({
+                            title: "error"
+                            text: "anda gagal untuk memperpanjang session"
+                            icon: "error"
+                        });
+                    }
+                });
+            }
+
+            function showSessionExpireWarning(){
+                const swalWithBootstrapButtons = Swal.mixin({
+                    customClass: {
+                        confirmButton: "btn btn-success",
+                        cancelButton: "btn btn-danger"
+                    },
+                    buttonsStyling: false
+                });
+                swalWithBootstrapButtons.fire({
+                    title: "Session anda telah berakhir ",
+                    text: "Apakah kamu ingin memperpanjang waktu",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Ya, perpanjang sesi penggunaan",
+                    cancelButtonText: "No, tidak perpanjang sesi ",
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        swalWithBootstrapButtons.fire({
+                            title: "Yeay, anda telah memperpanjang sesi, Terima Kasih",
+                            text: "Session ada telah berhasil di perpanjang",
+                            icon: "success"
+                        });
+                    } else if (
+                        /* Read more about handling dismissals below */
+                        result.dismiss === Swal.DismissReason.cancel
+                    ) {
+                        swalWithBootstrapButtons.fire({
+                            title: "gagal menambahkan session",
+                            text: "sesi anda telah berakhir",
+                            icon: "error"
+                        });
+                        window.location.href = './Lockout';
+                    }
+                });
+            }
+
+
+            function resetTimer(){
+                clearTimeout(warningTimeOut);
+                clearTimeout(ExpireTimeOut);
+
+                warningTimeOut = setTimeout(showSessionExpireWarning, warningTime);
+                ExpireTimeOut = setTimeout(() => {
+                    Swal.fire({
+                        title: "Session Berakhir"
+                        text: "Session anda telah Berakhir"
+                        icon: "error"
+                    });
+                    window.location.hrefalse = './Lockout';
+                }, sessionExpireTime);
+            }
+
+            // message to the user about the time the Session has expired
+            let warningTimeout = setTimeout(showSessionExpireWarningm warningTime);
+            ExpireTimeOut = SetTimeout(() => {
+                Swal.fire({
+                    title: "Session Berakhir"
+                            text: "Session anda telah Berakhir"
+                            icon: "error"
+                });
+            }, sessionExpireTime);
+
+        </script>
+-->
+    
+    <!-- end message Session-->
 
     <!-- Sisipkan data dari ViewBag ke dalam tag <script> -->
     <script>

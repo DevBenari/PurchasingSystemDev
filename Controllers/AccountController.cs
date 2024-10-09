@@ -79,7 +79,10 @@ namespace PurchasingSystemApps.Controllers
                         }
 
                         await _signInManager.SignInWithClaimsAsync(user, model.RememberMe, claims);
-
+                        // menyimpan data user yang sedang login berdasarkan NamaUser dan KodeUser
+                        HttpContext.Session.SetString("FullName", user.NamaUser);
+                        HttpContext.Session.SetString("KodeUser", user.KodeUser);
+                        
                         user.IsOnline = true;
 
                         await _userManager.UpdateAsync(user);
@@ -95,6 +98,8 @@ namespace PurchasingSystemApps.Controllers
                     else if (result.IsLockedOut)
                     {
                         _logger.LogWarning("User account locked out.");
+                        // HttpContext.session.Clear untuk menghapus session data pengguna tidak lagi tersimpan
+                        HttpContext.Session.Clear();
                         return RedirectToPage("./Lockout");
                     }
                     else

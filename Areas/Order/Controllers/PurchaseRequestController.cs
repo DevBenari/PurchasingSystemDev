@@ -3,6 +3,7 @@ using FastReport.Export.PdfSimple;
 using FastReport.Web;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -132,7 +133,7 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
+        
         public IActionResult Index()
         {
             ViewBag.Active = "PurchaseRequest";
@@ -151,13 +152,16 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
             //}).ToList();
             //ViewBag.CountApproval = countApproval.Count;
 
+            
             var getUserLogin = _userActiveRepository.GetAllUserLogin().Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
             var getUserActive = _userActiveRepository.GetAllUser().Where(c => c.UserActiveCode == getUserLogin.KodeUser).FirstOrDefault();
+
+
 
             if (getUserLogin.Id == "5f734880-f3d9-4736-8421-65a66d48020e")
             {
                 var data = _purchaseRequestRepository.GetAllPurchaseRequest();
-
+                    
                 foreach (var item in data)
                 {
                     var remainingDay = DateTimeOffset.Now.Date - item.CreateDateTime.Date;
