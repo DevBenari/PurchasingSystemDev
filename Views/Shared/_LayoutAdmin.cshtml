@@ -385,10 +385,13 @@
     <!-- AdminLTE App -->
     <script src="~/admin/dist/js/adminlte.js"></script>
     <script src="~/admin/dist/js/signalr.min.js"></script>
+    
+
 
     @*UI Normal*@
     <script src="https://cdn.datatables.net/2.0.1/js/dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/2.0.1/js/dataTables.bootstrap4.min.js"></script>
+    
 
     <!-- membuat session message-->
 
@@ -398,7 +401,7 @@
         let sessionExpireTime = 30 * 1000; // 30 detik
         let warningTimeout, expireTimeout;
 
-        function extendSession() {
+            let warningTime = 4 * 60 * 100;
             fetch("/accountController/ExtendSession", {
                 method: 'POST'
             }).then(response => {
@@ -423,7 +426,7 @@
             });
         }
 
-        function showSessionExpireWarning() {
+            function showSessionExpireWarning(){
             swal({
                 title: "Session Anda akan Berakhir",
                 text: "Apakah kamu ingin memperpanjang session",
@@ -444,15 +447,15 @@
             });
         }
 
-        function resetTimer() {
+                        });
             clearTimeout(warningTimeout);
             clearTimeout(expireTimeout);
 
-            warningTimeout = setTimeout(showSessionExpireWarning, sessionExpireTime - warningTime);
+                    } else if (
             expireTimeout = setTimeout(endSession, sessionExpireTime);
         }
 
-        function endSession() {
+                        swalWithBootstrapButtons.fire({
             swal({
                 title: "Session Berakhir",
                 text: "Session anda telah berakhir",
@@ -467,15 +470,32 @@
             }, 1500);
         }
 
-        // Inisialisasi timer saat halaman dimuat
+            function resetTimer(){
         resetTimer();
 
-        // Tambahkan event listener untuk mereset timer saat ada aktivitas
+                        title: "Session Berakhir"
         document.addEventListener('click', resetTimer);
         document.addEventListener('keypress', resetTimer);
     </script>
 
     
+                    });
+                    window.location.hrefalse = './Lockout';
+                }, sessionExpireTime);
+            }
+            // message to the user about the time the Session has expired
+            // message to the user about the time the Session has expired
+            let warningTimeout = setTimeout(showSessionExpireWarningm warningTime);
+            ExpireTimeOut = SetTimeout(() => {
+                Swal.fire({
+                    title: "Session Berakhir"
+                            text: "Session anda telah Berakhir"
+                            icon: "error"
+                });
+            }, sessionExpireTime);
+        </script>
+        </script>
+-->
     <!-- end message Session-->
 
     <!-- Sisipkan data dari ViewBag ke dalam tag <script> -->
