@@ -34,6 +34,14 @@ namespace PurchasingSystemApps.Controllers
             return View();
         }
 
+        [HttpPost]
+        public IActionResult ExtendSession()
+        {
+            HttpContext.Session.SetString("LastActivity", DateTime.Now.ToString());
+            return Ok();
+        }
+
+
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Login()
@@ -123,5 +131,7 @@ namespace PurchasingSystemApps.Controllers
             }
             return View(model);
         }
+
+     
     }
 }

@@ -65,12 +65,6 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 });
 
-//builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-//    .AddCookie(options =>
-//    {
-//        options.ExpireTimeSpan = TimeSpan.FromSeconds(30);
-//        options.SlidingExpiration = false;
-//    });
 
 
 AddScope();
