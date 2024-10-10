@@ -34,6 +34,18 @@ namespace PurchasingSystemApps.Controllers
             return View();
         }
 
+
+        [HttpPost]
+        [Route("accountController/ExtendSession")]
+        public IActionResult ExtendSession()
+        {
+            // Memperpanjang session dengan memperbarui waktu aktivitas terakhir
+            HttpContext.Session.SetString("LastActivity", DateTime.Now.ToString());
+
+            return Ok();
+        }
+
+
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Login()

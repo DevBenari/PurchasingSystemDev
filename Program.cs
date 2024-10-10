@@ -61,16 +61,10 @@ builder.Services.AddSession(options =>
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.ExpireTimeSpan = TimeSpan.FromSeconds(30);
-    options.SlidingExpiration = false;
+    options.SlidingExpiration = true;
 
 });
 
-//builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-//    .AddCookie(options =>
-//    {
-//        options.ExpireTimeSpan = TimeSpan.FromSeconds(30);
-//        options.SlidingExpiration = false;
-//    });
 
 
 AddScope();

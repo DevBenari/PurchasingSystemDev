@@ -392,100 +392,89 @@
 
     <!-- membuat session message-->
 
-<!--
-                <script>
 
-            let warningTime = 4 * 60 * 100;
+    <script>
+        let warningTime = 10 * 1000; // 10 detik
+        let sessionExpireTime = 30 * 1000; // 30 detik
+        let warningTimeout, expireTimeout;
 
-            let sessionExpireTime = 5 * 60 * 1000;
-
-            function extendSession() {
-                fetch("/", {
-                    method: 'POST'
-                }).then(Response => {
-                    if (reponse.ok) {
-                        Swal.fire({
-                            title: "Session Diperpanjang",
-                            text: "Waktu session Anda telah diperpanjang",
-                            icon: "success"
-                        });
-                        resetTimer():
-                    }
-                    else {
-                        Swal.fire({
-                            title: "error"
-                            text: "anda gagal untuk memperpanjang session"
-                            icon: "error"
-                        });
-                    }
-                });
-            }
-
-            function showSessionExpireWarning(){
-                const swalWithBootstrapButtons = Swal.mixin({
-                    customClass: {
-                        confirmButton: "btn btn-success",
-                        cancelButton: "btn btn-danger"
-                    },
-                    buttonsStyling: false
-                });
-                swalWithBootstrapButtons.fire({
-                    title: "Session anda telah berakhir ",
-                    text: "Apakah kamu ingin memperpanjang waktu",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Ya, perpanjang sesi penggunaan",
-                    cancelButtonText: "No, tidak perpanjang sesi ",
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        swalWithBootstrapButtons.fire({
-                            title: "Yeay, anda telah memperpanjang sesi, Terima Kasih",
-                            text: "Session ada telah berhasil di perpanjang",
-                            icon: "success"
-                        });
-                    } else if (
-                        /* Read more about handling dismissals below */
-                        result.dismiss === Swal.DismissReason.cancel
-                    ) {
-                        swalWithBootstrapButtons.fire({
-                            title: "gagal menambahkan session",
-                            text: "sesi anda telah berakhir",
-                            icon: "error"
-                        });
-                        window.location.href = './Lockout';
-                    }
-                });
-            }
-
-
-            function resetTimer(){
-                clearTimeout(warningTimeOut);
-                clearTimeout(ExpireTimeOut);
-
-                warningTimeOut = setTimeout(showSessionExpireWarning, warningTime);
-                ExpireTimeOut = setTimeout(() => {
-                    Swal.fire({
-                        title: "Session Berakhir"
-                        text: "Session anda telah Berakhir"
-                        icon: "error"
+        function extendSession() {
+            fetch("/accountController/ExtendSession", {
+                method: 'POST'
+            }).then(response => {
+                if (response.ok) {
+                    swal({
+                        title: "Session Diperpanjang",
+                        text: "Waktu session Anda telah diperpanjang",
+                        type: "success",
+                        timer: 1500,
+                        showConfirmButton: false
                     });
-                    window.location.hrefalse = './Lockout';
-                }, sessionExpireTime);
-            }
+                    resetTimer();
+                } else {
+                    swal({
+                        title: "Session Anda Berakhir",
+                        text: "Anda gagal untuk memperpanjang session",
+                        type: "error",
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
 
-            // message to the user about the time the Session has expired
-            let warningTimeout = setTimeout(showSessionExpireWarningm warningTime);
-            ExpireTimeOut = SetTimeout(() => {
-                Swal.fire({
-                    title: "Session Berakhir"
-                            text: "Session anda telah Berakhir"
-                            icon: "error"
-                });
-            }, sessionExpireTime);
+        function showSessionExpireWarning() {
+            swal({
+                title: "Session Anda akan Berakhir",
+                text: "Apakah kamu ingin memperpanjang session",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Ya, perpanjang Session",
+                cancelButtonText: "Tidak, akhiri sesi",
+                confirmButtonClass: "btn btn-success",
+                cancelButtonClass: "btn btn-danger",
+                buttonsStyling: false,
+                reverseButtons: true
+            }).then(function (result) {
+                if (result) { 
+                    extendSession();
+                } else { 
+                    endSession();
+                }
+            });
+        }
 
-        </script>
--->
+        function resetTimer() {
+            clearTimeout(warningTimeout);
+            clearTimeout(expireTimeout);
+
+            warningTimeout = setTimeout(showSessionExpireWarning, sessionExpireTime - warningTime);
+            expireTimeout = setTimeout(endSession, sessionExpireTime);
+        }
+
+        function endSession() {
+            swal({
+                title: "Session Berakhir",
+                text: "Session anda telah berakhir",
+                type: "error",
+                timer: 1500,
+                showCancelButton: false,
+                buttons: false
+            });
+
+            setTimeout(function () {
+                window.location.href = './Account/Login?ReturnUrl=%2F';
+            }, 1500);
+        }
+
+        // Inisialisasi timer saat halaman dimuat
+        resetTimer();
+
+        // Tambahkan event listener untuk mereset timer saat ada aktivitas
+        document.addEventListener('click', resetTimer);
+        document.addEventListener('keypress', resetTimer);
+    </script>
+
     
     <!-- end message Session-->
 
