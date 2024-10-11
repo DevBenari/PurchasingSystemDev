@@ -393,15 +393,14 @@
     <script src="https://cdn.datatables.net/2.0.1/js/dataTables.bootstrap4.min.js"></script>
     
 
-    <!-- membuat session message-->
-
-                                        
+    <!-- script JS membuat session message  -->
     <script>
 
         let warningTime = 10 * 1000; // 10 detik
         let sessionExpireTime = 30 * 1000; // 30 detik
         let warningTimeout, expireTimeout;
 
+        // function confirm to perpanjang session yang terintegrasi dengan server 
         function extendSession() {
             fetch("/accountController/ExtendSession", {
 
@@ -435,7 +434,7 @@
                 }
             });
         }
-
+        // swal message when session will expire
         function showSessionExpireWarning() {
             swal({
                 title: "Session Anda akan Berakhir",
@@ -448,12 +447,22 @@
                 cancelButtonClass: "btn btn-danger",
                 buttonsStyling: false,
                 reverseButtons: true
+            }).then(function () {
+                return extendSession();
+            }, function (dismiss) {
+                if(dismiss === "cancel"){
+                    swal({
+                        title: "Session Berakhir",
+                        text: "Session anda telah berakhir",
+                        type: "error",
+                        timer: 1500,
+                        showCancelButton: false,
+                        buttons: false
+                    });
 
-            }).then(function (result) {
-                if (result) { 
-                    extendSession();
-                } else { 
-                    endSession();
+                    setTimeout(function () {
+                        window.location.href = './Account/Login?ReturnUrl=%2F';
+                    }, 1500);
                 }
             });
         }
@@ -466,21 +475,6 @@
             expireTimeout = setTimeout(endSession, sessionExpireTime);
         }
 
-        function endSession() {
-            swal({
-                title: "Session Berakhir",
-                text: "Session anda telah berakhir",
-                type: "error",
-                timer: 1500,
-                showCancelButton: false,
-                buttons: false
-            });
-
-            setTimeout(function () {
-                window.location.href = './Account/Login?ReturnUrl=%2F';
-            }, 1500);
-        }
-
         // Inisialisasi timer saat halaman dimuat
         resetTimer();
 
@@ -488,51 +482,6 @@
         document.addEventListener('click', resetTimer);
         document.addEventListener('keypress', resetTimer);
     </script>
-
-=======
-
-            }).then(function (result) {
-                if (result) {
-                    extendSession();
-                } else {
-                    endSession();
-                }
-            
-            });
-        }
-
-        // function untuk melakukan reset waktu session 
-        function resetTimer() {
-            clearTimeout(warningTimeout);
-            clearTimeout(expireTimeout);
-
-            warningTimeout = setTimeout(showSessionExpireWarning, warningTime);
-            expireTimeout = setTimeout(endSession, sessionExpireTime);
-        }
-
-        // function untuk mengakhiri session 
-        function endSession() {
-            // swal({
-            //     title: "Session Berakhir",
-            //     text: "Session anda telah berakhir",
-            //     type: "error",
-            //     timer:1500,
-            //     showCancelButton:true
-            // });
-            window.location.href = './Account/Login?ReturnUrl=%2F';
-        }
-
-        // Inisialisasi timer saat halaman dimuat
-        resetTimer();
-
-        // Tambahkan event listener untuk mereset timer saat ada aktivitas
-        document.addEventListener('click', resetTimer);
-        document.addEventListener('keypress', resetTimer);
-
-     </script>
--->
->>>>>>> 0a23c08aff98958095abcbd578284cddc0f2084b
-    
     <!-- end message Session-->
 
     <!-- Sisipkan data dari ViewBag ke dalam tag <script> -->
