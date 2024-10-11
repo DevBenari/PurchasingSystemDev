@@ -395,23 +395,12 @@
 
     <!-- script JS membuat session message  -->
     <script>
-
         let warningTime = 10 * 1000; // 10 detik
-        let sessionExpireTime = 30 * 1000; // 30 detik
+        let sessionExpireTime = 15 * 1000; // 15 detik
         let warningTimeout, expireTimeout;
 
-        // function confirm to perpanjang session yang terintegrasi dengan server 
         function extendSession() {
             fetch("/accountController/ExtendSession", {
-
-
-        let warningTime = 10 * 1000; // 2 menit dalam milidetik
-        let sessionExpireTime = 30 * 1000; // 5 menit dalam milidetik
-        let warningTimeout, expireTimeout;
-
-        function extendSession() {
-            fetch("/Index", {
-
                 method: 'POST'
             }).then(response => {
                 if (response.ok) {
@@ -434,8 +423,9 @@
                 }
             });
         }
-        // swal message when session will expire
+
         function showSessionExpireWarning() {
+            console.log("Showing session warning");  // Log ketika peringatan ditampilkan
             swal({
                 title: "Session Anda akan Berakhir",
                 text: "Apakah kamu ingin memperpanjang session",
@@ -450,19 +440,8 @@
             }).then(function () {
                 return extendSession();
             }, function (dismiss) {
-                if(dismiss === "cancel"){
-                    swal({
-                        title: "Session Berakhir",
-                        text: "Session anda telah berakhir",
-                        type: "error",
-                        timer: 1500,
-                        showCancelButton: false,
-                        buttons: false
-                    });
-
-                    setTimeout(function () {
-                        window.location.href = './Account/Login?ReturnUrl=%2F';
-                    }, 1500);
+                if (dismiss === "cancel") {
+                    endSession();  // Akhiri sesi jika pengguna memilih untuk melakukannya
                 }
             });
         }
@@ -471,8 +450,31 @@
             clearTimeout(warningTimeout);
             clearTimeout(expireTimeout);
 
+            console.log("Timer reset");  // Log ketika timer direset
+
             warningTimeout = setTimeout(showSessionExpireWarning, sessionExpireTime - warningTime);
             expireTimeout = setTimeout(endSession, sessionExpireTime);
+        }
+
+        function endSession() {
+            fetch("/accountController/EndSession", {
+                method: 'POST'
+            }).then(response => {
+                if (response.ok) {
+                    swal({
+                        title: "Session Berakhir",
+                        text: "Session Anda telah berakhir",
+                        type: "error",
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+
+                    // Redirect user ke halaman login
+                    setTimeout(function () {
+                        window.location.href = '/Account/Login?ReturnUrl=%2F';
+                    }, 1500);
+                }
+            });
         }
 
         // Inisialisasi timer saat halaman dimuat
@@ -481,7 +483,9 @@
         // Tambahkan event listener untuk mereset timer saat ada aktivitas
         document.addEventListener('click', resetTimer);
         document.addEventListener('keypress', resetTimer);
+        document.addEventListener('mousemove', resetTimer);
     </script>
+
     <!-- end message Session-->
 
     <!-- Sisipkan data dari ViewBag ke dalam tag <script> -->

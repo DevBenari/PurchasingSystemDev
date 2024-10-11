@@ -45,6 +45,18 @@ namespace PurchasingSystemApps.Controllers
             return Ok();
         }
 
+        [HttpPost]
+        [Route("accountController/EndSession")]
+        public IActionResult EndSession()
+        {
+            HttpContext.Session.Clear();
+
+            // Hapus authentication cookies jika ada
+            Response.Cookies.Delete(".AspNetCore.Identity.Application");
+
+            return Ok();
+        }
+
 
         [HttpGet]
         [AllowAnonymous]
