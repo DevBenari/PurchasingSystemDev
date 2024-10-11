@@ -395,14 +395,24 @@
 
     <!-- membuat session message-->
 
-
+                                        
     <script>
+
         let warningTime = 10 * 1000; // 10 detik
         let sessionExpireTime = 30 * 1000; // 30 detik
         let warningTimeout, expireTimeout;
 
-            let warningTime = 4 * 60 * 100;
+        function extendSession() {
             fetch("/accountController/ExtendSession", {
+
+
+        let warningTime = 10 * 1000; // 2 menit dalam milidetik
+        let sessionExpireTime = 30 * 1000; // 5 menit dalam milidetik
+        let warningTimeout, expireTimeout;
+
+        function extendSession() {
+            fetch("/Index", {
+
                 method: 'POST'
             }).then(response => {
                 if (response.ok) {
@@ -426,7 +436,7 @@
             });
         }
 
-            function showSessionExpireWarning(){
+        function showSessionExpireWarning() {
             swal({
                 title: "Session Anda akan Berakhir",
                 text: "Apakah kamu ingin memperpanjang session",
@@ -438,6 +448,7 @@
                 cancelButtonClass: "btn btn-danger",
                 buttonsStyling: false,
                 reverseButtons: true
+
             }).then(function (result) {
                 if (result) { 
                     extendSession();
@@ -447,15 +458,15 @@
             });
         }
 
-                        });
+        function resetTimer() {
             clearTimeout(warningTimeout);
             clearTimeout(expireTimeout);
 
-                    } else if (
+            warningTimeout = setTimeout(showSessionExpireWarning, sessionExpireTime - warningTime);
             expireTimeout = setTimeout(endSession, sessionExpireTime);
         }
 
-                        swalWithBootstrapButtons.fire({
+        function endSession() {
             swal({
                 title: "Session Berakhir",
                 text: "Session anda telah berakhir",
@@ -470,32 +481,58 @@
             }, 1500);
         }
 
-            function resetTimer(){
+        // Inisialisasi timer saat halaman dimuat
         resetTimer();
 
-                        title: "Session Berakhir"
+        // Tambahkan event listener untuk mereset timer saat ada aktivitas
         document.addEventListener('click', resetTimer);
         document.addEventListener('keypress', resetTimer);
     </script>
 
-    
-                    });
-                    window.location.hrefalse = './Lockout';
-                }, sessionExpireTime);
-            }
-            // message to the user about the time the Session has expired
-            // message to the user about the time the Session has expired
-            let warningTimeout = setTimeout(showSessionExpireWarningm warningTime);
-            ExpireTimeOut = SetTimeout(() => {
-                Swal.fire({
-                    title: "Session Berakhir"
-                            text: "Session anda telah Berakhir"
-                            icon: "error"
-                });
-            }, sessionExpireTime);
-        </script>
-        </script>
+=======
+
+            }).then(function (result) {
+                if (result) {
+                    extendSession();
+                } else {
+                    endSession();
+                }
+            
+            });
+        }
+
+        // function untuk melakukan reset waktu session 
+        function resetTimer() {
+            clearTimeout(warningTimeout);
+            clearTimeout(expireTimeout);
+
+            warningTimeout = setTimeout(showSessionExpireWarning, warningTime);
+            expireTimeout = setTimeout(endSession, sessionExpireTime);
+        }
+
+        // function untuk mengakhiri session 
+        function endSession() {
+            // swal({
+            //     title: "Session Berakhir",
+            //     text: "Session anda telah berakhir",
+            //     type: "error",
+            //     timer:1500,
+            //     showCancelButton:true
+            // });
+            window.location.href = './Account/Login?ReturnUrl=%2F';
+        }
+
+        // Inisialisasi timer saat halaman dimuat
+        resetTimer();
+
+        // Tambahkan event listener untuk mereset timer saat ada aktivitas
+        document.addEventListener('click', resetTimer);
+        document.addEventListener('keypress', resetTimer);
+
+     </script>
 -->
+>>>>>>> 0a23c08aff98958095abcbd578284cddc0f2084b
+    
     <!-- end message Session-->
 
     <!-- Sisipkan data dari ViewBag ke dalam tag <script> -->
