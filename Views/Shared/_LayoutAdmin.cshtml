@@ -393,15 +393,14 @@
     <script src="https://cdn.datatables.net/2.0.1/js/dataTables.bootstrap4.min.js"></script>
     
 
-    <!-- membuat session message-->
-
-
+    <!-- script JS membuat session message  -->
     <script>
         let warningTime = 10 * 1000; // 10 detik
         let sessionExpireTime = 30 * 1000; // 30 detik
         let warningTimeout, expireTimeout;
 
-            let warningTime = 4 * 60 * 100;
+        // function confirm to perpanjang session yang terintegrasi dengan server 
+        function extendSession() {
             fetch("/accountController/ExtendSession", {
                 method: 'POST'
             }).then(response => {
@@ -425,8 +424,8 @@
                 }
             });
         }
-
-            function showSessionExpireWarning(){
+        // swal message when session will expire
+        function showSessionExpireWarning() {
             swal({
                 title: "Session Anda akan Berakhir",
                 text: "Apakah kamu ingin memperpanjang session",
@@ -438,64 +437,41 @@
                 cancelButtonClass: "btn btn-danger",
                 buttonsStyling: false,
                 reverseButtons: true
-            }).then(function (result) {
-                if (result) { 
-                    extendSession();
-                } else { 
-                    endSession();
+            }).then(function () {
+                return extendSession();
+            }, function (dismiss) {
+                if(dismiss === "cancel"){
+                    swal({
+                        title: "Session Berakhir",
+                        text: "Session anda telah berakhir",
+                        type: "error",
+                        timer: 1500,
+                        showCancelButton: false,
+                        buttons: false
+                    });
+
+                    setTimeout(function () {
+                        window.location.href = './Account/Login?ReturnUrl=%2F';
+                    }, 1500);
                 }
             });
         }
 
-                        });
+        function resetTimer() {
             clearTimeout(warningTimeout);
             clearTimeout(expireTimeout);
 
-                    } else if (
+            warningTimeout = setTimeout(showSessionExpireWarning, sessionExpireTime - warningTime);
             expireTimeout = setTimeout(endSession, sessionExpireTime);
         }
 
-                        swalWithBootstrapButtons.fire({
-            swal({
-                title: "Session Berakhir",
-                text: "Session anda telah berakhir",
-                type: "error",
-                timer: 1500,
-                showCancelButton: false,
-                buttons: false
-            });
-
-            setTimeout(function () {
-                window.location.href = './Account/Login?ReturnUrl=%2F';
-            }, 1500);
-        }
-
-            function resetTimer(){
+        // Inisialisasi timer saat halaman dimuat
         resetTimer();
 
-                        title: "Session Berakhir"
+        // Tambahkan event listener untuk mereset timer saat ada aktivitas
         document.addEventListener('click', resetTimer);
         document.addEventListener('keypress', resetTimer);
     </script>
-
-    
-                    });
-                    window.location.hrefalse = './Lockout';
-                }, sessionExpireTime);
-            }
-            // message to the user about the time the Session has expired
-            // message to the user about the time the Session has expired
-            let warningTimeout = setTimeout(showSessionExpireWarningm warningTime);
-            ExpireTimeOut = SetTimeout(() => {
-                Swal.fire({
-                    title: "Session Berakhir"
-                            text: "Session anda telah Berakhir"
-                            icon: "error"
-                });
-            }, sessionExpireTime);
-        </script>
-        </script>
--->
     <!-- end message Session-->
 
     <!-- Sisipkan data dari ViewBag ke dalam tag <script> -->
