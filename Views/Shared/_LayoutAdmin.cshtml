@@ -425,7 +425,7 @@
         }
 
         function showSessionExpireWarning() {
-            console.log("Showing session warning");  // Log ketika peringatan ditampilkan
+            console.log("Showing session warning"); 
             swal({
                 title: "Session Anda akan Berakhir",
                 text: "Apakah kamu ingin memperpanjang session",
@@ -441,7 +441,24 @@
                 return extendSession();
             }, function (dismiss) {
                 if (dismiss === "cancel") {
-                    endSession();  // Akhiri sesi jika pengguna memilih untuk melakukannya
+                    fetch("/accountController/EndSession", {
+                        method: 'POST'
+                    }).then(response => {
+                        if (response.ok) {
+                            swal({
+                                title: "Session Berakhir",
+                                text: "Session Anda telah berakhir",
+                                type: "error",
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+
+                            
+                            setTimeout(function () {
+                                window.location.href = '/Account/Login?ReturnUrl=%2F';
+                            }, 1500);
+                        }
+                    });  
                 }
             });
         }
@@ -450,40 +467,19 @@
             clearTimeout(warningTimeout);
             clearTimeout(expireTimeout);
 
-            console.log("Timer reset");  // Log ketika timer direset
+            console.log("Timer reset");  
 
             warningTimeout = setTimeout(showSessionExpireWarning, sessionExpireTime - warningTime);
             expireTimeout = setTimeout(endSession, sessionExpireTime);
         }
 
-        function endSession() {
-            fetch("/accountController/EndSession", {
-                method: 'POST'
-            }).then(response => {
-                if (response.ok) {
-                    swal({
-                        title: "Session Berakhir",
-                        text: "Session Anda telah berakhir",
-                        type: "error",
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-
-                    // Redirect user ke halaman login
-                    setTimeout(function () {
-                        window.location.href = '/Account/Login?ReturnUrl=%2F';
-                    }, 1500);
-                }
-            });
-        }
-
-        // Inisialisasi timer saat halaman dimuat
-        resetTimer();
-
         // Tambahkan event listener untuk mereset timer saat ada aktivitas
         document.addEventListener('click', resetTimer);
         document.addEventListener('keypress', resetTimer);
         document.addEventListener('mousemove', resetTimer);
+
+        // Inisialisasi timer saat halaman dimuat
+        resetTimer();
     </script>
 
     <!-- end message Session-->
