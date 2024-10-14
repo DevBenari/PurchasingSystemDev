@@ -142,20 +142,28 @@
         $(function () {
             $('#tglAwalPencarian').datetimepicker({
                 format: 'DD MMMM YYYY',
+                timepicker: false,
+                enableHours: false,
                 ignoreReadonly: true,
                 allowInputToggle: true,
                 useCurrent: false,
-                keepOpen: false
+                keepOpen: false,
+                mask:true
+                
             })
 
             $('#tglAkhirPencarian').datetimepicker({
                 format: 'DD MMMM YYYY',
                 ignoreReadonly: true,
+                timepicker:false,
+                enableHours: false,
                 allowInputToggle: true,
                 useCurrent: false,
-                keepOpen: false
+                keepOpen: false,
+                mask:true
+                        
             })
-            $('.datetimepicker-input').on('keydown paste', function (e) {
+            $('.datetimepicker-input').on('keydown paste ', function (e) {
                 e.preventDefault();
                 return false;
             });

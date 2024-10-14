@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using PurchasingSystemApps.Areas.MasterData.Repositories;
 using PurchasingSystemApps.Data;
 using PurchasingSystemApps.Models;
 using PurchasingSystemApps.ViewModels;
@@ -15,16 +16,19 @@ namespace PurchasingSystemApps.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private ILogger<AccountController> _logger;
         private readonly ApplicationDbContext _applicationDbContext;
+        private readonly IUserActiveRepository _userActiveRepository;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             ApplicationDbContext applicationDbContext,
+            IUserActiveRepository userActiveRepository,
             ILogger<AccountController> logger)
         {
             _applicationDbContext = applicationDbContext;
             _signInManager = signInManager;
             _userManager = userManager;
+            _userActiveRepository = userActiveRepository;
             _logger = logger;
         }
 
@@ -47,10 +51,19 @@ namespace PurchasingSystemApps.Controllers
 
         [HttpPost]
         [Route("accountController/EndSession")]
-        public IActionResult EndSession()
+        public async Task<IActionResult> EndSession()
         {
-            HttpContext.Session.Clear();
+            
 
+            var getUser = _userActiveRepository.GetAllUserLogin().Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
+            var user = await _signInManager.UserManager.FindByNameAsync(getUser.Email);
+
+            if (user != null)
+            {
+                user.IsOnline = false;
+                await _userManager.UpdateAsync(user);
+            }
+            HttpContext.Session.Clear();
             // Hapus authentication cookies jika ada
             Response.Cookies.Delete(".AspNetCore.Identity.Application");
 

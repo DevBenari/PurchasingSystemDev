@@ -12,7 +12,7 @@ namespace PurchasingSystemApps.Areas.MasterData.Repositories
 
         public IUserActiveRepository(ApplicationDbContext context)
         {
-            _context = context;
+            _context = context;  
         }
 
         public UserActive Tambah(UserActive user)

@@ -30,7 +30,9 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
         private readonly IPositionRepository _positionRepository;
         private readonly IPurchaseRequestRepository _purchaseRequestRepository;
         private readonly IPurchaseOrderRepository _purchaseOrderRepository;
+       
 
+        private readonly ILogger<UserActiveController> _logger;
         private readonly IHostingEnvironment _hostingEnvironment;
 
         public UserActiveController(
@@ -44,6 +46,7 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
             IPurchaseRequestRepository purchaseRequestRepository,
             IPurchaseOrderRepository purchaseOrderRepository,
 
+            ILogger<UserActiveController> logger,
             IHostingEnvironment hostingEnvironment
         )
         {
@@ -57,6 +60,7 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
             _purchaseRequestRepository = purchaseRequestRepository;
             _purchaseOrderRepository = purchaseOrderRepository;
 
+            _logger = logger;   
             _hostingEnvironment = hostingEnvironment;
         }
 
@@ -70,10 +74,11 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
         [Authorize]
         public async Task<IActionResult> Index()
         {
-
+            
             ViewBag.Active = "MasterData";
             var data = _userActiveRepository.GetAllUser();
-              return View(data);
+            _logger.LogInformation($"controller getAllUser in action on : {DateTime.Now.TimeOfDay}");
+            return View(data);
         }
 
         [HttpPost]
@@ -190,6 +195,8 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
                 var passTglLahir = vm.DateOfBirth.ToString("ddMMMyyyy");                
                 var resultLogin = await _userManager.CreateAsync(userLogin, passTglLahir);
 
+                _logger.LogInformation($"add a user to the create user page on : {DateTime.Now.TimeOfDay}");
+
                 var checkDuplicatePengguna = _userActiveRepository.GetAllUser().Where(c => c.FullName == vm.FullName && c.DepartmentId == vm.DepartmentId).ToList();
 
                 if (checkDuplicatePengguna.Count == 0)
@@ -237,7 +244,7 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
+        
         public async Task<IActionResult> DetailUserActive(Guid Id)
         {
             ViewBag.Department = new SelectList(await _departmentRepository.GetDepartments(), "DepartmentId", "DepartmentName", SortOrder.Ascending);

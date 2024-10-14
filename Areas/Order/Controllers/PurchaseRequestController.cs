@@ -44,6 +44,7 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
         private readonly ISupplierRepository _supplierRepository;
         private readonly IHubContext<ChatHub> _hubContext;
 
+        private readonly ILogger<PurchaseRequestController> _logger;
         private readonly IHostingEnvironment _hostingEnvironment;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IConfiguration _configuration;
@@ -66,6 +67,7 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
             ISupplierRepository supplierRepository,
             IHubContext<ChatHub> hubContext,
 
+            ILogger<PurchaseRequestController> logger,
             IHostingEnvironment hostingEnvironment,
             IWebHostEnvironment webHostEnvironment,
             IConfiguration configuration
@@ -87,6 +89,7 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
             _supplierRepository = supplierRepository;
             _hubContext = hubContext;
 
+            _logger = logger;
             _hostingEnvironment = hostingEnvironment;
             _webHostEnvironment = webHostEnvironment;
             _configuration = configuration;
@@ -449,6 +452,7 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
                     _approvalRepository.Tambah(approval);
                 }
 
+                _logger.LogInformation($"add PR success on : {DateTime.Now.TimeOfDay}");
                 TempData["SuccessMessage"] = "Number " + model.PurchaseRequestNumber + " Saved";
                 return Json(new { redirectToUrl = Url.Action("Index", "PurchaseRequest") });
             }
