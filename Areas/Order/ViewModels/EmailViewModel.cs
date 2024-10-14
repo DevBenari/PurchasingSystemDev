@@ -2,11 +2,12 @@
 {
     public class EmailViewModel
     {
-        public Guid? Emailid { get; set; }
+        public Guid? EmailId { get; set; }
         public string To { get; set; }
         public string Subject { get; set; }
-        public string Pesan { get; set; }
+        public string Message { get; set; }
         public string Status { get; set; }
-        public string AttachmentFileName { get; set; }
+        public IFormFile? Document { get; set; }
+        //public string AttachmentFileName { get; set; }
     }
 }

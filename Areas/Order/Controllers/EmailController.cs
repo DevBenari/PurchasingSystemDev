@@ -10,6 +10,7 @@ using PurchasingSystemApps.Data;
 using PurchasingSystemApps.Models;
 using System.Net.Mail;
 using System.Net;
+using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace PurchasingSystemApps.Areas.Order.Controllers
 {
@@ -21,15 +22,18 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationDbContext _applicationDbContext;
         private readonly IUserActiveRepository _userActiveRepository;
-
         private readonly IEmailRepository _emailRepository;
+
+        private readonly IHostingEnvironment _hostingEnvironment;
 
         public EmailController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             ApplicationDbContext applicationDbContext,
             IUserActiveRepository userActiveRepository,
-            IEmailRepository emailRepository
+            IEmailRepository emailRepository,
+
+            IHostingEnvironment hostingEnvironment
         )
         {
             _userManager = userManager;
@@ -37,6 +41,8 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
             _applicationDbContext = applicationDbContext;
             _userActiveRepository = userActiveRepository;
             _emailRepository = emailRepository;
+
+            _hostingEnvironment = hostingEnvironment;
         }
         public IActionResult Index()
         {
@@ -61,39 +67,60 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
             if (ModelState.IsValid)
             {
                 // Ambil informasi file dari input
-                var file = Request.Form.Files.FirstOrDefault();
+                string uniqueFileName = ProcessUploadFile(model);
 
-                if (file != null && file.Length > 0)
+                // Simpan informasi file ke database
+                var email = new Email
                 {
-                    // Buat nama file unik
-                    var uniqueFileName = $"{Guid.NewGuid()}_{file.FileName}";
-                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/email", uniqueFileName);
+                    CreateDateTime = DateTime.Now,
+                    CreateBy = new Guid(getUser.Id),
+                    EmailId = Guid.NewGuid(),
+                    To = model.To,
+                    Subject = model.Subject,
+                    Message = model.Message,
+                    Document = uniqueFileName,
+                    Status = "Terkirim",
 
-                    // Simpan file ke direktori
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        file.CopyTo(stream);
-                    }
+                    /*AttachmentFileName = uniqueFileName*/ // Simpan nama file unik ke database
+                };
 
-                    // Simpan informasi file ke database
-                    var email = new Email
-                    {
-                        CreateDateTime = DateTime.Now,
-                        CreateBy = new Guid(getUser.Id),
-                        Emailid = Guid.NewGuid(),
-                        To = model.To,
-                        Subject = model.Subject,
-                        Pesan = model.Pesan,
-                        Status = "Terkirim",
-                        AttachmentFileName = uniqueFileName // Simpan nama file unik ke database
-                    };
+                _emailRepository.Tambah(email);
+                return RedirectToAction("Index");
+                //var file = Request.Form.Files.FirstOrDefault();
 
-                    _emailRepository.Tambah(email);
-                    return RedirectToAction("Index");
-                }
+                //if (file != null && file.Length > 0)
+                //{
+                // Buat nama file unik
+                //var uniqueFileName = $"{Guid.NewGuid()}_{file.FileName}";
+                //var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/email", uniqueFileName);
+
+                // Simpan file ke direktori
+                //using (var stream = new FileStream(filePath, FileMode.Create))
+                //{
+                //    file.CopyTo(stream);
+                //}                    
+                //}
             }
 
             return View(model);
+        }
+
+        private string ProcessUploadFile(EmailViewModel model)
+        {
+            string uniqueFileName = null;
+            if (model.Document != null)
+            {
+                string uploadFolder = Path.Combine(_hostingEnvironment.WebRootPath, "EmailDocument");
+                if (!Directory.Exists(uploadFolder))
+                {
+                    Directory.CreateDirectory(uploadFolder);
+                }
+                uniqueFileName = Guid.NewGuid().ToString() + "_" + model.Document.FileName;
+                string filePath = Path.Combine(uploadFolder, uniqueFileName);
+                model.Document.CopyTo(new FileStream(filePath, FileMode.Create));
+            }
+
+            return uniqueFileName;
         }
 
 
