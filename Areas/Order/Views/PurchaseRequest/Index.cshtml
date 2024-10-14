@@ -76,9 +76,9 @@
                                         <th>Expired Day</th>
                                         <th>Remaining Day</th>
                                         <th>Create By</th>                                        
-                                        <th>User Approve 1</th>
-                                        <th>User Approve 2</th>
-                                        <th>User Approve 3</th>
+                                        <th>Approve 1</th>
+                                        <th>Approve 2</th>
+                                        <th>Approve 3</th>
                                         <th>PR Number</th>
                                         <th>Status</th>
                                         @*<th>Grand Total</th>*@
@@ -215,7 +215,7 @@
                     {
                         <script type="text/javascript">
                             window.onload = function () {
-                                swal("Berhasil", '@TempData["SuccessMessage"]', "success");
+                                swal("Success", '@TempData["SuccessMessage"]', "success");
                             };
                         </script>
                     }
@@ -223,7 +223,7 @@
                     {
                         <script type="text/javascript">
                             window.onload = function () {
-                                swal("Gagal Simpan", '@TempData["WarningMessage"]', "warning");
+                                swal("Failed", '@TempData["WarningMessage"]', "warning");
                             };
                         </script>
                     }

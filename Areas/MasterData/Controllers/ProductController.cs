@@ -77,7 +77,6 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
             return View(data);
         }
 
-
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> Index(DateTime tglAwalPencarian, DateTime tglAkhirPencarian)
@@ -136,8 +135,6 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
             var setDateNow = DateTimeOffset.Now.ToString("yyMMdd");
 
             var lastCode = _productRepository.GetAllProduct().Where(d => d.CreateDateTime.ToString("yyMMdd") == dateNow.ToString("yyMMdd")).OrderByDescending(k => k.ProductCode).FirstOrDefault();
-
-
             if (lastCode == null)
             {
                 vm.ProductCode = "PDC" + setDateNow + "0001";

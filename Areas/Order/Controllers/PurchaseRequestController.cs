@@ -217,6 +217,7 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
             var getUser = _userActiveRepository.GetAllUserLogin().Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
 
             ViewBag.Product = new SelectList(await _productRepository.GetProducts(), "ProductId", "ProductName", SortOrder.Ascending);
+            //ViewBag.Product = from p in _applicationDbContext.Products.Include(s => s.Supplier).ToList() select new { ProductId = p.ProductId, ProductName = p.ProductName, Supplier = p.Supplier.SupplierName };
             ViewBag.Approval = new SelectList(await _userActiveRepository.GetUserActives(), "UserActiveId", "FullName", SortOrder.Ascending);
             ViewBag.TermOfPayment = new SelectList(await _termOfPaymentRepository.GetTermOfPayments(), "TermOfPaymentId", "TermOfPaymentName", SortOrder.Ascending);
             ViewBag.DueDate = new SelectList(await _dueDateRepository.GetDueDates(), "DueDateId", "Value", SortOrder.Ascending);
@@ -346,16 +347,12 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
                 purchaseRequest.ExpiredDate = expiredDay;
                 purchaseRequest.RemainingDay = purchaseRequest.ExpiredDay - remainingDay.Days;
 
+                purchaseRequest.PurchaseRequestDetails = ItemsList;
+                _purchaseRequestRepository.Tambah(purchaseRequest);
+
                 //Signal R
 
                 var data2 = _purchaseRequestRepository.GetAllPurchaseRequest();
-                //var data2 = new List<dynamic>
-                //    {
-                //        new { CreateBy = "USER1004", PurchaseRequestNumber = "PR004", CreateDateTime = DateTime.Parse("2024-09-26 10:00:00") },
-                //        new { CreateBy = "USER1005", PurchaseRequestNumber = "PR002", CreateDateTime = DateTime.Parse("2024-09-20 09:00:00") },
-                //        new { CreateBy = "USER1006", PurchaseRequestNumber = "PR003", CreateDateTime = DateTime.Parse("2024-09-15 08:30:00") }
-                //    };
-
                 var loggerData = new List<string>();
 
                 foreach (var logger in data2)
@@ -371,10 +368,7 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
                 await _hubContext.Clients.All.SendAsync("UpdateDataCount", totalKaryawan);
                 await _hubContext.Clients.All.SendAsync("UpdateDataLogger", loggerDataJson);
 
-                //End Signal R
-
-                purchaseRequest.PurchaseRequestDetails = ItemsList;
-                _purchaseRequestRepository.Tambah(purchaseRequest);
+                //End Signal R                
 
                 if (model.UserApprove1Id != null) 
                 {
