@@ -1,12 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using NuGet.Protocol.Core.Types;
 using PurchasingSystemApps.Areas.MasterData.Repositories;
 using PurchasingSystemApps.Data;
 using PurchasingSystemApps.Models;
 using PurchasingSystemApps.ViewModels;
+using System.Net;
 using System.Security.Claims;
+using UAParser;
 
 namespace PurchasingSystemApps.Controllers
 {
@@ -119,12 +123,45 @@ namespace PurchasingSystemApps.Controllers
                         // menyimpan data user yang sedang login berdasarkan NamaUser dan KodeUser
                         HttpContext.Session.SetString("FullName", user.NamaUser);
                         HttpContext.Session.SetString("KodeUser", user.KodeUser);
-                        
+
+                        var loginTime = DateTime.Now.TimeOfDay;
+                        HttpContext.Session.SetString("LoginTime", loginTime.ToString());
+
+
                         user.IsOnline = true;
 
                         await _userManager.UpdateAsync(user);
+                        // kode untuk user yang login mendapatkan ip address
+                        var userIpAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+                        if (userIpAddress == "::1")
+                        {
+                            userIpAddress = Dns.GetHostEntry(Dns.GetHostName()).AddressList[1].ToString();
+                        }
 
-                        _logger.LogInformation("User logged in.");
+                        // mendapatkan browser dan device yang sedang digunakan 
+                        var userBrowser = HttpContext.Request.Headers["User-Agent"].ToString();
+                        var uaParser = Parser.GetDefault();
+                        ClientInfo client = uaParser.Parse(userBrowser);
+
+                        var BrowserName = client.UA.Family;
+                        var versionBrowser = client.UA.Major;
+                        string DeviceName = client.Device.Family;
+                        if(DeviceName == "Other")
+                        {
+                            if (userBrowser.Contains("Windows NT", StringComparison.OrdinalIgnoreCase))
+                                DeviceName = "Windows PC";
+                            else if (userBrowser.Contains("iPhone", StringComparison.OrdinalIgnoreCase))
+                                DeviceName = "iPhone";
+                            else if (userBrowser.Contains("Android", StringComparison.OrdinalIgnoreCase))
+                                DeviceName = "Android Device";
+                            else if (userBrowser.Contains("Mac", StringComparison.OrdinalIgnoreCase))
+                                DeviceName = "Mac";
+                            else
+                                DeviceName = "Unknown";
+                        }
+
+                        _logger.LogInformation($"user {user.NamaUser} has successfully logged in with IP {userIpAddress.ToString()} at {loginTime}  ");      
+                        _logger.LogInformation($"User  logged in on browser : {BrowserName} version {versionBrowser} with device: {DeviceName}");
                         return RedirectToAction("Index", "Home");
                     }
                     else if (result.RequiresTwoFactor)

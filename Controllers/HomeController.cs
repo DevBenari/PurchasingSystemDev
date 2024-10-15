@@ -27,6 +27,7 @@ namespace PurchasingSystemApps.Controllers
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IPurchaseRequestRepository _purchaseRequestRepository;
 
+
         public HomeController(ILogger<HomeController> logger,
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
@@ -262,9 +263,15 @@ namespace PurchasingSystemApps.Controllers
                 await _userManager.UpdateAsync(user);
             }
 
+
             // HttpContext.session.Clear untuk menghapus session data pengguna tidak lagi tersimpan
             HttpContext.Session.Clear();
             await _signInManager.SignOutAsync();
+
+
+            var loginTimeString = HttpContext.Session.GetString("LoginTime");
+
+            _logger.LogInformation($"User has been {user.NamaUser} logout");
             return RedirectToAction("Index", "Home");
         }
 

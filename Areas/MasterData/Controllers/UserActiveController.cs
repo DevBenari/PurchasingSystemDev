@@ -77,7 +77,6 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
             
             ViewBag.Active = "MasterData";
             var data = _userActiveRepository.GetAllUser();
-            _logger.LogInformation($"controller getAllUser in action on : {DateTime.Now.TimeOfDay}");
             return View(data);
         }
 
@@ -250,13 +249,6 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
             ViewBag.Department = new SelectList(await _departmentRepository.GetDepartments(), "DepartmentId", "DepartmentName", SortOrder.Ascending);
             ViewBag.Position = new SelectList(await _positionRepository.GetPositions(), "PositionId", "PositionName", SortOrder.Ascending);
 
-            //var userLogin = HttpContext.Session.GetString("KodeUser");
-
-            //if (userLogin == null)
-            //{
-            //    return RedirectToAction("Index", "Home");
-            //}
-
             ViewBag.Active = "MasterData";
             var user = await _userActiveRepository.GetUserById(Id);
 
@@ -345,7 +337,6 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
                             {
                                 _userActiveRepository.Update(user);
                                 _applicationDbContext.SaveChanges();
-
                                 TempData["SuccessMessage"] = "Account " + viewModel.FullName + " Success Changes";
                                 return RedirectToAction("Index", "UserActive");
                             }
@@ -357,7 +348,7 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
                             TempData["WarningMessage"] = "Account " + viewModel.FullName + " Sorry, Data Failed !!!";
                             return View(viewModel);
                         }
-                    }
+                    }   
                     else
                     {
                         ViewBag.Department = new SelectList(await _departmentRepository.GetDepartments(), "DepartmentId", "DepartmentName", SortOrder.Ascending);
