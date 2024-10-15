@@ -261,17 +261,21 @@ namespace PurchasingSystemApps.Controllers
             {
                 user.IsOnline = false;
                 await _userManager.UpdateAsync(user);
+
+                var loginTime = HttpContext.Session.GetString("LoginTime");
+                if (DateTime.TryParse(loginTime, out DateTime loginTimes));
+                {
+                    var logoutTime = DateTime.Now;
+                    var duration = logoutTime - loginTimes;
+
+                    _logger.LogInformation($"User {user.NamaUser} has logged out on {logoutTime}. Login duration: {duration} hours");
+                }
             }
 
 
             // HttpContext.session.Clear untuk menghapus session data pengguna tidak lagi tersimpan
-            HttpContext.Session.Clear();
+            HttpContext.Session.Clear(); 
             await _signInManager.SignOutAsync();
-
-
-            var loginTimeString = HttpContext.Session.GetString("LoginTime");
-
-            _logger.LogInformation($"User has been {user.NamaUser} logout");
             return RedirectToAction("Index", "Home");
         }
 

@@ -45,7 +45,7 @@ namespace PurchasingSystemApps.Controllers
 
         [HttpPost]
         [Route("accountController/ExtendSession")]
-        public IActionResult ExtendSession()
+           public IActionResult ExtendSession()
         {
             // Memperpanjang session dengan memperbarui waktu aktivitas terakhir
             HttpContext.Session.SetString("LastActivity", DateTime.Now.ToString());
@@ -62,11 +62,15 @@ namespace PurchasingSystemApps.Controllers
             var getUser = _userActiveRepository.GetAllUserLogin().Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
             var user = await _signInManager.UserManager.FindByNameAsync(getUser.Email);
 
-            if (user != null)
+            var loginTime = HttpContext.Session.GetString("LoginTime");
+            if (DateTime.TryParse(loginTime, out DateTime loginTimes)) ;
             {
-                user.IsOnline = false;
-                await _userManager.UpdateAsync(user);
+                var logoutTime = DateTime.Now;
+                var duration = logoutTime - loginTimes;
+
+                _logger.LogInformation($"User {user.NamaUser} has logged out on {logoutTime}. Login duration: {duration} hours");
             }
+
             HttpContext.Session.Clear();
             // Hapus authentication cookies jika ada
             Response.Cookies.Delete(".AspNetCore.Identity.Application");
@@ -124,7 +128,7 @@ namespace PurchasingSystemApps.Controllers
                         HttpContext.Session.SetString("FullName", user.NamaUser);
                         HttpContext.Session.SetString("KodeUser", user.KodeUser);
 
-                        var loginTime = DateTime.Now.TimeOfDay;
+                        var loginTime = DateTime.Now;
                         HttpContext.Session.SetString("LoginTime", loginTime.ToString());
 
 
