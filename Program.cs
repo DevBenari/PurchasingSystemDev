@@ -13,6 +13,8 @@ using PurchasingSystemApps.Data;
 using PurchasingSystemApps.Hubs;
 using PurchasingSystemApps.Models;
 using PurchasingSystemApps.Repositories;
+using Serilog;
+using Serilog.Sinks.MSSqlServer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,6 +66,19 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 
 });
+
+// konfigurasi Serilog logger to file 
+var logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .CreateLogger();
+
+//builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger);
+
+IConfiguration configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build();
+Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(configuration).CreateLogger();
+
 
 
 
@@ -119,8 +134,6 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
-
 
 
 //Tambahan Baru
