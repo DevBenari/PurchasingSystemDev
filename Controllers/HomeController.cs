@@ -30,6 +30,7 @@ namespace PurchasingSystemApps.Controllers
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IPurchaseRequestRepository _purchaseRequestRepository;
         private readonly IProductRepository _productRepository;
+        private readonly IApprovalRepository _approvalRepository;
 
         public HomeController(ILogger<HomeController> logger,
             UserManager<ApplicationUser> userManager,
@@ -38,7 +39,8 @@ namespace PurchasingSystemApps.Controllers
             IHubContext<ChatHub> hubContext,
             IPurchaseRequestRepository purchaseRequestRepository,
             IUserActiveRepository userActiveRepository,
-            IProductRepository productRepository)
+            IProductRepository productRepository,
+            IApprovalRepository approvalRepository)
         {
             _logger = logger;
             _applicationDbContext = context;
@@ -48,6 +50,7 @@ namespace PurchasingSystemApps.Controllers
             _userActiveRepository = userActiveRepository;
             _purchaseRequestRepository = purchaseRequestRepository;
             _productRepository = productRepository;
+            _approvalRepository = approvalRepository;
         }
 
         public async Task<IActionResult> Index()
@@ -114,22 +117,17 @@ namespace PurchasingSystemApps.Controllers
 
             //Signal R
 
-            var data2 = _purchaseRequestRepository.GetAllPurchaseRequest();
-
-            var loggerData = new List<string>();
-
-            foreach (var logger in data2)
-            {
-                var detail = $"{logger.CreateBy}, {logger.PurchaseRequestNumber}, {logger.CreateDateTime}";
-                loggerData.Add(detail);
-            }
+            var getUserId = _userActiveRepository.GetAllUserLogin().Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
+            var getUserActiveId = _userActiveRepository.GetAllUser().Where(u => u.UserActiveCode == getUserId.KodeUser).FirstOrDefault().UserActiveId;
+            var data2 = _purchaseRequestRepository.GetAllPurchaseRequest()
+                            .Where(p => (p.UserApprove1Id == getUserActiveId && p.ApproveStatusUser1 == null) 
+                            || (p.UserApprove2Id == getUserActiveId && p.ApproveStatusUser1 == "Approve" && p.ApproveStatusUser2 == null) 
+                            || (p.UserApprove3Id == getUserActiveId && p.ApproveStatusUser1 == "Approve" && p.ApproveStatusUser2 == "Approve" && p.ApproveStatusUser3 == null))
+                            .ToList();
 
             int totalKaryawan = data2.Count();
-            var loggerDataJson = JsonConvert.SerializeObject(loggerData);
             ViewBag.TotalKaryawan = totalKaryawan;
-            ViewBag.LoggerData = loggerDataJson;
             await _hubContext.Clients.All.SendAsync("UpdateDataCount", totalKaryawan);
-            await _hubContext.Clients.All.SendAsync("UpdateDataLogger", loggerDataJson);
 
             //End Signal R
 
@@ -291,5 +289,39 @@ namespace PurchasingSystemApps.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult CountNotifikasi()
+        {
+            var getUserId = _userActiveRepository.GetAllUserLogin().Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
+            var getUserActiveId = _userActiveRepository.GetAllUser().Where(u => u.UserActiveCode == getUserId.KodeUser).FirstOrDefault().UserActiveId;
+            var data2 = _purchaseRequestRepository.GetAllPurchaseRequest()
+                            .Where(p => (p.UserApprove1Id == getUserActiveId && p.ApproveStatusUser1 == null)
+                            || (p.UserApprove2Id == getUserActiveId && p.ApproveStatusUser1 == "Approve" && p.ApproveStatusUser2 == null)
+                            || (p.UserApprove3Id == getUserActiveId && p.ApproveStatusUser1 == "Approve" && p.ApproveStatusUser2 == "Approve" && p.ApproveStatusUser3 == null))
+                            .ToList();
+
+           
+            var loggerData = new List<object>();
+
+            foreach (var logger in data2)
+            {
+                var getUserApproveId = _approvalRepository.GetAllApproval().Where(u => u.UserApproveId == getUserActiveId && u.PurchaseRequestNumber == logger.PurchaseRequestNumber).FirstOrDefault().ApprovalId;
+
+                var detail = new
+                {
+                    approvalId = getUserApproveId,
+                    createdBy = _userActiveRepository.GetAllUserLogin().Where(u => u.Id == logger.CreateBy.ToString()).FirstOrDefault()?.NamaUser,
+                    purchaseRequestNumber = logger.PurchaseRequestNumber,
+                    createdDate = logger.CreateDateTime.ToString("dd/MM/yyyy HH:mm")
+                };
+                loggerData.Add(detail);
+            }
+
+            return Json(new { success = true, totalKaryawan = data2.Count, loggerDataJson = loggerData });
+
+        }
+
     }
 }
