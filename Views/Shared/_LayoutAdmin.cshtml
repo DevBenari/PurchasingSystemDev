@@ -448,8 +448,9 @@
                         var a = 0;
                         // Loop untuk menampilkan data logger ke dalam loggerContainer
                         $.each(loggerData, function (index, item) {
+                            var url = '@Url.Action("DetailApproval", "Approval", new { area = "Order", id = "__id__" })'.replace("__id__", item.approvalId);
                             var content = `
-                                <a href="${'@Url.Action("DetailApproval", "Approval", new { id = "__id__" })'.replace("__id__", item.approvalId)}" class="dropdown-item">
+                                   <a href="${url}" class="dropdown-item">
                                     <div class="media">
                                         <div class="media-body">
                                             <h3 class="dropdown-item-title">
@@ -463,7 +464,7 @@
                                 </a>
                                 <div class="dropdown-divider"></div>`;
 
-                            // Append ke loggerContainer
+                            // Append ke loggerContainer 
                             $("#loggerContainer").append(content);
                             a++;
                         });
