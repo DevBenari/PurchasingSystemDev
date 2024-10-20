@@ -1,3 +1,5 @@
+using System.Net.Sockets;
+using System.Net;
 using FastReport.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -11,9 +13,11 @@ using PurchasingSystemApps.Areas.Transaction.Repositories;
 using PurchasingSystemApps.Areas.Warehouse.Repositories;
 using PurchasingSystemApps.Data;
 using PurchasingSystemApps.Hubs;
+using PurchasingSystemApps.Middleware;
 using PurchasingSystemApps.Models;
 using PurchasingSystemApps.Repositories;
 using Serilog;
+using dotenv.net;
 using Serilog.Sinks.MSSqlServer;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +25,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+var options = new DotEnvOptions(
+    ignoreExceptions: false, 
+    envFilePaths: new[] { ".env" }, 
+    probeForEnv: true 
+);
+DotEnv.Config(options);
 
 //Tambahan Baru
 builder.Services.AddHttpClient();
@@ -68,22 +78,26 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 // konfigurasi Serilog logger to file 
+
+var host = Dns.GetHostEntry(Dns.GetHostName());
+var userIp = host.AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)?.ToString() ?? "UnknownIP";
+
+var path = Environment.GetEnvironmentVariable("LOG_FILE_PATH");
+Console.WriteLine($"apakah path nyaa muncul {path}");
+var logFilePath = $"{path}/Serilog-{userIp}-.csv";
+Console.WriteLine($"apakah path nyaa muncul {logFilePath}");    
 var logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
+    .WriteTo.File(logFilePath, rollingInterval:RollingInterval.Day)
     .Enrich.FromLogContext()
     .CreateLogger();
 
 //builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
-IConfiguration configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build();
-Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(configuration).CreateLogger();
-
-
-
-
 AddScope();
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, ApplicationUserClaims>();
+//builder.Services.AddScoped<LogUsernameMiddleware>();
 
 #region Areas Master Data
 builder.Services.AddScoped<IUserActiveRepository>();
