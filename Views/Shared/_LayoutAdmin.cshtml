@@ -470,7 +470,7 @@
             console.log("Timer reset");  
 
             warningTimeout = setTimeout(showSessionExpireWarning, sessionExpireTime - warningTime);
-            expireTimeout = setTimeout(endSession, sessionExpireTime);
+            expireTimeout = setTimeout(sessionExpireTime, sessionExpireTime);
         }
 
         // Tambahkan event listener untuk mereset timer saat ada aktivitas
