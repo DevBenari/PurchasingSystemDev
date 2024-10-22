@@ -272,7 +272,6 @@ namespace PurchasingSystemApps.Controllers
                 }
             }
 
-
             // HttpContext.session.Clear untuk menghapus session data pengguna tidak lagi tersimpan
             HttpContext.Session.Clear(); 
             await _signInManager.SignOutAsync();

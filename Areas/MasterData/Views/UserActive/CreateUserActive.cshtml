@@ -17,7 +17,7 @@
 <section class="content">
     <div class="row">
         <div class="col-md-12 bg-white">
-            <form enctype="multipart/form-data" asp-controller="UserActive" asp-action="CreateUserActive" method="post" class="form-horizontal">
+            <form enctype="multipart/form-data" asp-controller="UserActive" asp-action="CreateUserActive" method="post" class="form-horizontal" id="uploadForm">
                 <div class="card-header bg-cyan">
                     <h3 class="card-title fw-bold" style="color:#ffffff">@ViewBag.Title</h3>
 
@@ -111,17 +111,27 @@
                         <div class="col-sm-6 input-group">
                             <label class="input-group" asp-for="Email"></label>
                             <div class="input-group-prepend">
-                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <span class="input-group-text mb-4"><i class="fas fa-envelope"></i></span>
                             </div>
                             <input asp-for="Email" autocomplete="off" type="text" class="form-control form-control-border border-width-2" placeholder="Email">
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
                         <div class="col-sm-6">
                             <label asp-for="Foto"></label>
-                            <div class="custom-file">
-                                <input asp-for="Foto" class="form-control custom-file-input">
-                                <label class="custom-file-label">Choose Photos...</label>
+                            <div class="custom-file mt-1">
+                                <input asp-for="Foto" 
+                                 class="form-control custom-file-input mt-1"
+                                 accept=".jpg, .jpeg, .png, .gif"
+                                 id="photoInput"
+                                 onchange="validateAndPreviewImage(this)"
+                                 placeholder="Choose Photos...">
+                                <label class="custom-file-label" for="photoInput">Choose Photos...</label>
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle"></i>
+                                    Maksimum ukuran: 2MB | Format: .jpg, .jpeg, .png, .gif
+                                </small>
                             </div>
+                            
                             <span asp-validation-for="Foto" class="text-danger"></span>
                         </div>
                     </div>                    
@@ -170,6 +180,49 @@
                                 format: 'DD/MM/yyyy'
                             })
                         })
+                    </script>
+
+                    <!-- membuat swal untuk warning size file and format file -->
+                    <script>
+                        function  validationAndPriviewImage(input){
+                            const filename = Input.files[0]?.name || 'Choose Foto........';
+                            $('#photoInput + .custom-file-label').html(filename);
+
+                            if(!input.files || !input.files[0]){
+                                clearImageUpload();
+                                return false;
+                            }
+
+                            const file = input.files[0];
+
+                            // Validasi ukuran file (2MB)
+                            const maxSize = 2 * 1024 * 1024; 
+                            if (file.size > maxSize) {
+                                Swal({
+                                    title: 'Error!',
+                                    text: 'Ukuran file melebihi batas maksimum 5MB',
+                                    type: 'error',
+                                    confirmButtonText: 'OK',
+                                    confirmButtonColor: '#dc3545'
+                                });
+                                clearImageUpload();
+                                return false;
+                            }
+
+                            // Validasi tipe file
+                            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                            if (!allowedTypes.includes(file.type)) {
+                                Swal({
+                                    title: 'Format Tidak Sesuai!',
+                                    text: 'Format file tidak didukung. Gunakan .jpg, .jpeg, .png, atau .gif',
+                                    type: 'warning',
+                                    confirmButtonText: 'OK',
+                                    confirmButtonColor: '#ffc107'
+                                });
+                                clearImageUpload();
+                                return false;
+                            }
+                        }
                     </script>
 
                     <script>

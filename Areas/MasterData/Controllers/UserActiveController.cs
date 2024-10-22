@@ -13,6 +13,7 @@ using PurchasingSystemApps.Data;
 using PurchasingSystemApps.Models;
 using PurchasingSystemApps.Repositories;
 using System.Data;
+using System.Text.RegularExpressions;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace PurchasingSystemApps.Areas.MasterData.Controllers
@@ -82,13 +83,16 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> Index(DateTime tglAwalPencarian, DateTime tglAkhirPencarian)
+        public async Task<IActionResult> Index(DateTime tglAwalPencarian, DateTime tglAkhirPencarian, string filterOptions)
         {
             ViewBag.Active = "MasterData";
+
             ViewBag.tglAwalPencarian = tglAwalPencarian.ToString("dd MMMM yyyy");
             ViewBag.tglAkhirPencarian = tglAkhirPencarian.ToString("dd MMMM yyyy");
+            ViewBag.SelectedFilter = filterOptions; 
 
-            var data = _userActiveRepository.GetAllUser().Where(r => r.CreateDateTime.Date >= tglAwalPencarian && r.CreateDateTime.Date <= tglAkhirPencarian).ToList();            
+            var data = _userActiveRepository.GetAllUser().Where(r => r.CreateDateTime.Date >= tglAwalPencarian && r.CreateDateTime.Date <= tglAkhirPencarian).ToList();
+
             return View(data);
         }
 
@@ -222,7 +226,7 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
                     {
                         ViewBag.Department = new SelectList(await _departmentRepository.GetDepartments(), "DepartmentId", "DepartmentName", SortOrder.Ascending);
                         ViewBag.Position = new SelectList(await _positionRepository.GetPositions(), "PositionId", "PositionName", SortOrder.Ascending);
-                        TempData["WarningMessage"] = "Account " + vm.FullName + " Already Exist !!!";
+                        TempData["War  ningMessage"] = "Account " + vm.FullName + " Already Exist !!!";
                         return View(vm);
                     }
                 }
@@ -519,18 +523,53 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
         //}
         private string ProcessUploadFile(UserActiveViewModel model)
         {
-            string uniqueFileName = null;
-            if (model.Foto != null)
+            
+            if(model.Foto == null)
             {
+                return null;
+            }
+
+            string[] FileAkses = { ".jpg", ".jepg" ,".png", ".gif"};
+            string fileExtensions = Path.GetExtension(model.Foto.FileName).ToLowerInvariant();
+
+            if(!FileAkses.Contains(fileExtensions))
+                {
+                    throw new InvalidOperationException("format file harus png, jpg, jepg, gif");
+                }
+
+            if(model.Foto.Length > 2 * 1024 * 1024)
+                {
+                    throw new InvalidOperationException("ukuran file telah melebihi batas maksimum 2MB");
+                }
+
+            string safeFileName = Path.GetFileNameWithoutExtension(model.Foto.FileName);
+            safeFileName = Regex.Replace(safeFileName, @"[^a-zA-Z0-9-_]", "");
+
+                var uniqueFileName = $"{Guid.NewGuid()}_{safeFileName}_{DateTime.Now.Ticks}{fileExtensions}";
                 string uploadFolder = Path.Combine(_hostingEnvironment.WebRootPath, "UserPhoto");
+
                 if (!Directory.Exists(uploadFolder))
                 {
                     Directory.CreateDirectory(uploadFolder);
                 }
-                uniqueFileName = Guid.NewGuid().ToString() + "_" + model.FullName + "_" + model.Foto.FileName;
+
                 string filePath = Path.Combine(uploadFolder, uniqueFileName);
-                model.Foto.CopyTo(new FileStream(filePath, FileMode.Create));
-            }
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    model.Foto.CopyTo(fileStream);
+                }
+
+
+                //string uploadFolder = Path.Combine(_hostingEnvironment.WebRootPath, "UserPhoto");
+                //if (!Directory.Exists(uploadFolder))
+                //{
+                //    Directory.CreateDirectory(uploadFolder);
+                //}
+                //uniqueFileName = Guid.NewGuid().ToString() + "_" + model.FullName + "_" + model.Foto.FileName;
+                //string filePath = Path.Combine(uploadFolder, uniqueFileName);
+                //model.Foto.CopyTo(new FileStream(filePath, FileMode.Create));
+            
 
             return uniqueFileName;
         }

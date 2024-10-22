@@ -1,0 +1,9 @@
+[ 17-10-2024 15:18:21.258 +07:00  INF]  Now listening on: https://localhost:7111
+[ 17-10-2024 15:18:21.275 +07:00  INF]  Now listening on: http://localhost:5111
+[ 17-10-2024 15:18:21.313 +07:00  INF]  Application started. Press Ctrl+C to shut down.
+[ 17-10-2024 15:18:21.313 +07:00  INF]  Hosting environment: Development
+[ 17-10-2024 15:18:21.313 +07:00  INF]  Content root path: C:\Users\BenariDev03\Source\Repos\PurchasingSystemDev\
+[ 17-10-2024 15:18:33.664 +07:00  INF]  user Barra Jonin has successfully logged in with IP 192.168.15.221 at 17/10/2024 15:18:33  
+[ 17-10-2024 15:18:33.665 +07:00  INF]  User  logged in on browser : Chrome version 129 with device: Windows PC
+[ 17-10-2024 15:18:39.629 +07:00  INF]  User Barra Jonin has logged out on 17/10/2024 15:18:39. Login duration: 00:00:06.6283087 hours
+[ 17-10-2024 16:26:36.777 +07:00  INF]  Application is shutting down...
