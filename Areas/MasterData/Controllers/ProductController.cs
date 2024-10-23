@@ -82,13 +82,82 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Index(DateTime tglAwalPencarian, DateTime tglAkhirPencarian)
+        public async Task<IActionResult> Index(DateTime? tglAwalPencarian, DateTime? tglAkhirPencarian, string filterOptions)
         {
             ViewBag.Active = "MasterData";
-            ViewBag.tglAwalPencarian = tglAwalPencarian.ToString("dd MMMM yyyy");
-            ViewBag.tglAkhirPencarian = tglAkhirPencarian.ToString("dd MMMM yyyy");
 
-            var data = _productRepository.GetAllProduct().Where(r => r.CreateDateTime.Date >= tglAwalPencarian && r.CreateDateTime.Date <= tglAkhirPencarian).ToList();
+            var data = _productRepository.GetAllProduct();
+
+            if(tglAwalPencarian.HasValue && tglAkhirPencarian.HasValue)
+            {
+                data = data.Where(u => u.CreateDateTime.Date >= tglAwalPencarian.Value.Date &&
+                                       u.CreateDateTime.Date <= tglAkhirPencarian.Value.Date);
+            }
+            else if (!string.IsNullOrEmpty(filterOptions))
+            {
+                var today = DateTime.Today;
+                switch (filterOptions)
+                {
+                    case "Today":
+                        data = data.Where(u => u.CreateDateTime.Date == today);
+                        break;
+                    case "Last Day":
+                        data = data.Where(x => x.CreateDateTime.Date == today.AddDays(-1));
+                        break;
+
+                    case "Last 7 Days":
+                        var last7Days = today.AddDays(-7);
+                        data = data.Where(x => x.CreateDateTime.Date >= last7Days && x.CreateDateTime.Date <= today);
+                        break;
+
+                    case "Last 30 Days":
+                        var last30Days = today.AddDays(-30);
+                        data = data.Where(x => x.CreateDateTime.Date >= last30Days && x.CreateDateTime.Date <= today);
+                        break;
+
+                    case "This Month":
+                        var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
+                        data = data.Where(x => x.CreateDateTime.Date >= firstDayOfMonth && x.CreateDateTime.Date <= today);
+                        break;
+
+                    case "Last Month":
+                        var firstDayOfLastMonth = today.AddMonths(-1).Date.AddDays(-(today.Day - 1));
+                        var lastDayOfLastMonth = today.Date.AddDays(-today.Day);
+                        data = data.Where(x => x.CreateDateTime.Date >= firstDayOfLastMonth && x.CreateDateTime.Date <= lastDayOfLastMonth);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            var productData = data.OrderByDescending( u => u.CreateDateTime).ToList();
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new
+                {
+                    data = productData.Select(product => new
+                    {
+                        createDate = product.CreateDateTime.ToString("dd MMMM yyyy"),
+                        productId = product.ProductId,
+                        productName = product.ProductName,
+                        supplier = product.Supplier?.SupplierName ?? string.Empty,
+                        category = product.Category?.CategoryName ?? string.Empty,
+                        measure = product.Measurement?.MeasurementName ?? string.Empty,
+                        minStock = product.MinStock,
+                        maxStock = product.MaxStock,
+                        bufferStock = product.BufferStock,
+                        stock = product.Stock,
+                        retailPrice = Math.Truncate(product.RetailPrice)
+
+                    })
+                });
+            }
+
+            ViewBag.tglAwalPencarian = tglAwalPencarian?.ToString("dd MMMM yyyy");
+            ViewBag.tglAkhirPencarian = tglAkhirPencarian?.ToString("dd MMMM yyyy");
+            ViewBag.SelectedFilter = filterOptions;
+
             return View(data);
         }
 

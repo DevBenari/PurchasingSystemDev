@@ -88,6 +88,7 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
         {
             ViewBag.Active = "MasterData";
             var data = _userActiveRepository.GetAllUser();
+            var userLogin = _userActiveRepository.GetAllUserLogin().Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
 
             if (tglAwalPencarian.HasValue && tglAkhirPencarian.HasValue)
             {
@@ -140,15 +141,14 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
                     data = users.Select(user => new {
                         foto = "/UserPhoto/" + (user.Foto ?? "user.jpg"),
                         createDate = user.CreateDateTime.ToString("dd MMMM yyyy"),
-                        userCode = user.UserActiveCode,
-                        fullName = user.FullName,
-                        identityNumber = user.IdentityNumber,
-                        department = user.Department.DepartmentName,
-                        position = user.Position.PositionName,
+                        userActiveId = user.UserActiveId,  // tetap kirim untuk rowCallback
+                        userCode = user.UserActiveCode ?? string.Empty,
+                        fullName = user.FullName ?? string.Empty,
+                        department = user.Department?.DepartmentName ?? string.Empty,
+                        position = user.Position?.PositionName ?? string.Empty,
                         dateOfBirth = user.DateOfBirth.ToString("dd MMMM yyyy"),
-                        address = user.Address,
-                        id = user.UserActiveId
-                    })
+                        address = user.Address ?? string.Empty
+                    }).ToList()
                 });
             }
 
