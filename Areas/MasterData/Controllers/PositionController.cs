@@ -105,23 +105,6 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
                 }
             }
 
-            var positionData = data.OrderByDescending(pst => pst.CreateDateTime).ToList();
-
-            if(Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            {
-                return Json(new
-                {
-                    data = positionData.Select(item => new
-                    {
-                        createDate = item.CreateDateTime.ToString("dd MMMM yyyy"),
-                        positionCode = item.PositionCode,
-                        positionName = item.PositionName,
-                        departement = item.Department?.DepartmentName ?? string.Empty,
-
-                    })
-                });
-            };
-
             ViewBag.tglAwalPencarian = tglAwalPencarian?.ToString("dd MMMM yyyy");
             ViewBag.tglAkhirPencarian = tglAkhirPencarian?.ToString("dd MMMM yyyy");
             ViewBag.SelectedFilter = filterOptions;

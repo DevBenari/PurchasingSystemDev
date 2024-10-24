@@ -61,7 +61,7 @@
                             </div>
                             <div class="form-group col-md-3">
                                 <div class="form-group">
-                                    <select class="form-control select2bs4" style="width: 100%;" id="btnFilterBy" data-placeholder="--Filter by--" onchange="filterUsers()">
+                                    <select class="form-control" name="filterOptions" id="btnFilterBy">
                                         <option value="" hidden disabled selected>--Filter by--</option>
                                         <option value="Today" selected=@(ViewBag.SelectedFilter == "Today")>Today</option>
                                         <option value="Last Day" selected=@(ViewBag.SelectedFilter == "Last Day")>Last Day</option>
@@ -89,7 +89,7 @@
                                     @foreach (var Position in Model)
                                     {
 
-                                        <tr data-href="@Url.Action("DetailPosition", "Position", new {id=Position.PositionId})">
+                                        <tr class="text-center" data-href="@Url.Action("DetailPosition", "Position", new {id=Position.PositionId})">
                                             <th></th>
                                             <td>@Position.CreateDateTime.ToString("dd MMMM yyyy")</td>
                                             <td>@Position.PositionCode</td>
@@ -122,58 +122,46 @@
 @section Scripts{
     <script src="~/scripts/tabletemplate.js"></script>
     <script>
-        $(function () {
-            $('#tglAwalPencarian').datetimepicker({
-                format: 'DD MMMM YYYY',
-                timepicker: false,
-                enableHours: false,
-                ignoreReadonly: true,
-                allowInputToggle: true,
-                useCurrent: false,
-                keepOpen: false,
-                mask: true
+       $(document).ready(function () {
+        $("#btnFilterBy").data('placeholder');
 
-            })
+        $('#btnFilterBy').on('change', function () {
+            $(this).closest('form').submit();
+        });
 
-            $('#tglAkhirPencarian').datetimepicker({
-                format: 'DD MMMM YYYY',
-                timepicker: false,
-                enableHours: false,
-                ignoreReadonly: true,
-                allowInputToggle: true,
-                useCurrent: false,
-                keepOpen: false,
-                mask: true
+        $('#tglAwalPencarian').datetimepicker({
+            format: 'DD MMMM YYYY',
+            timepicker: false,
+            enableHours: false,
+            ignoreReadonly: true,
+            allowInputToggle: true,
+            useCurrent: false,
+            keepOpen: false,
+            mask: true
 
-            })
-            $('.datetimepicker-input').on('keydown paste ', function (e) {
-                e.preventDefault();
-                return false;
-            });
+                })
+
+                $('#tglAkhirPencarian').datetimepicker({
+            format: 'DD MMMM YYYY',
+            timepicker: false,
+            enableHours: false,
+            ignoreReadonly: true,
+            allowInputToggle: true,
+            useCurrent: false,
+            keepOpen: false,
+            mask: true
+
+                })
+        $('.datetimepicker-input').on('keydown paste ', function (e) {
+            e.preventDefault();
+            return false;
+                });
 
 
-            $('.datetimepicker-input').on('focus', function () {
-                $(this).closest('.input-group').find('.input-group-append').click();
-            });
-        })
-    </script>
-
-    <style>
-        tr[data-href] {
-            cursor: pointer;
-        }
-    </style>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const rows = document.querySelectorAll("tr[data-href]");
-
-            rows.forEach(row => {
-                row.addEventListener("dblclick", () => {
-                    window.location.href = row.dataset.href;
+                $('.datetimepicker-input').on('focus', function () {
+            $(this).closest('.input-group').find('.input-group-append').click();
                 });
             });
-        });
     </script>
 
     <style>

@@ -20,6 +20,7 @@ using PurchasingSystemApps.Hubs;
 using PurchasingSystemApps.Models;
 using PurchasingSystemApps.Repositories;
 using System.Data;
+using System.IO;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace PurchasingSystemApps.Areas.Order.Controllers
@@ -204,14 +205,145 @@ namespace PurchasingSystemApps.Areas.Order.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> Index(DateTimeOffset tglAwalPencarian, DateTimeOffset tglAkhirPencarian)
+        public async Task<IActionResult> Index(DateTimeOffset? tglAwalPencarian, DateTimeOffset? tglAkhirPencarian, string filterOptions)
         {
             ViewBag.Active = "PurchaseRequest";
-            ViewBag.tglAwalPencarian = tglAwalPencarian.ToString("dd MMMM yyyy");
-            ViewBag.tglAkhirPencarian = tglAkhirPencarian.ToString("dd MMMM yyyy");
 
-            var data = _purchaseRequestRepository.GetAllPurchaseRequest().Where(r => r.CreateDateTime.Date >= tglAwalPencarian && r.CreateDateTime.Date <= tglAkhirPencarian).ToList();
-            return View(data);
+            
+            var getUserLogin = _userActiveRepository.GetAllUserLogin().Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
+            var getUserActive = _userActiveRepository.GetAllUser().Where(c => c.UserActiveCode == getUserLogin.KodeUser).FirstOrDefault();
+
+
+            if(getUserLogin.Id == "5f734880-f3d9-4736-8421-65a66d48020e")
+            {
+
+                var data = _purchaseRequestRepository.GetAllPurchaseRequest();
+                foreach (var item in data)
+                {
+                    var remainingDay = DateTimeOffset.Now.Date - item.CreateDateTime.Date;
+                    var updateData = _purchaseRequestRepository.GetAllPurchaseRequest().Where(u => u.PurchaseRequestId == item.PurchaseRequestId).FirstOrDefault();
+
+                    if (updateData.RemainingDay != 0)
+                    {
+                        updateData.RemainingDay = item.ExpiredDay - remainingDay.Days;
+
+                        _applicationDbContext.PurchaseRequests.Update(updateData);
+                        _applicationDbContext.SaveChanges();
+                    }
+                }
+
+                if (tglAwalPencarian.HasValue && tglAkhirPencarian.HasValue)
+                {
+                    data = data.Where(u => u.CreateDateTime.Date >= tglAwalPencarian.Value.Date &&
+                                           u.CreateDateTime.Date <= tglAkhirPencarian.Value.Date);
+                }
+                else if (!string.IsNullOrEmpty(filterOptions))
+                {
+                    var today = DateTime.Today;
+                    switch (filterOptions)
+                    {
+                        case "Today":
+                            data = data.Where(u => u.CreateDateTime.Date == today);
+                            break;
+                        case "Last Day":
+                            data = data.Where(x => x.CreateDateTime.Date == today.AddDays(-1));
+                            break;
+
+                        case "Last 7 Days":
+                            var last7Days = today.AddDays(-7);
+                            data = data.Where(x => x.CreateDateTime.Date >= last7Days && x.CreateDateTime.Date <= today);
+                            break;
+
+                        case "Last 30 Days":
+                            var last30Days = today.AddDays(-30);
+                            data = data.Where(x => x.CreateDateTime.Date >= last30Days && x.CreateDateTime.Date <= today);
+                            break;
+
+                        case "This Month":
+                            var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
+                            data = data.Where(x => x.CreateDateTime.Date >= firstDayOfMonth && x.CreateDateTime.Date <= today);
+                            break;
+
+                        case "Last Month":
+                            var firstDayOfLastMonth = today.AddMonths(-1).Date.AddDays(-(today.Day - 1));
+                            var lastDayOfLastMonth = today.Date.AddDays(-today.Day);
+                            data = data.Where(x => x.CreateDateTime.Date >= firstDayOfLastMonth && x.CreateDateTime.Date <= lastDayOfLastMonth);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                ViewBag.tglAwalPencarian = tglAwalPencarian?.ToString("dd MMMM yyyy");
+                ViewBag.tglAkhirPencarian = tglAkhirPencarian?.ToString("dd MMMM yyyy");
+                ViewBag.SelectedFilter = filterOptions;
+                return View(data);
+            }
+            else
+            {
+                var data = _purchaseRequestRepository.GetAllPurchaseRequest().Where(u => u.CreateBy.ToString() == getUserLogin.Id);
+
+                foreach (var item in data)
+                {
+                    var remainingDay = DateTimeOffset.Now.Date - item.CreateDateTime.Date;
+                    var updateData = _purchaseRequestRepository.GetAllPurchaseRequest().Where(u => u.PurchaseRequestId == item.PurchaseRequestId).FirstOrDefault();
+
+                    if (updateData.RemainingDay != 0)
+                    {
+                        updateData.RemainingDay = item.ExpiredDay - remainingDay.Days;
+
+                        _applicationDbContext.PurchaseRequests.Update(updateData);
+                        _applicationDbContext.SaveChanges();
+                    }
+                }
+
+                if (tglAwalPencarian.HasValue && tglAkhirPencarian.HasValue)
+                {
+                    data = data.Where(u => u.CreateDateTime.Date >= tglAwalPencarian.Value.Date &&
+                                           u.CreateDateTime.Date <= tglAkhirPencarian.Value.Date);
+                }
+                else if (!string.IsNullOrEmpty(filterOptions))
+                {
+                    var today = DateTime.Today;
+                    switch (filterOptions)
+                    {
+                        case "Today":
+                            data = data.Where(u => u.CreateDateTime.Date == today);
+                            break;
+                        case "Last Day":
+                            data = data.Where(x => x.CreateDateTime.Date == today.AddDays(-1));
+                            break;
+
+                        case "Last 7 Days":
+                            var last7Days = today.AddDays(-7);
+                            data = data.Where(x => x.CreateDateTime.Date >= last7Days && x.CreateDateTime.Date <= today);
+                            break;
+
+                        case "Last 30 Days":
+                            var last30Days = today.AddDays(-30);
+                            data = data.Where(x => x.CreateDateTime.Date >= last30Days && x.CreateDateTime.Date <= today);
+                            break;
+
+                        case "This Month":
+                            var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
+                            data = data.Where(x => x.CreateDateTime.Date >= firstDayOfMonth && x.CreateDateTime.Date <= today);
+                            break;
+
+                        case "Last Month":
+                            var firstDayOfLastMonth = today.AddMonths(-1).Date.AddDays(-(today.Day - 1));
+                            var lastDayOfLastMonth = today.Date.AddDays(-today.Day);
+                            data = data.Where(x => x.CreateDateTime.Date >= firstDayOfLastMonth && x.CreateDateTime.Date <= lastDayOfLastMonth);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                ViewBag.tglAwalPencarian = tglAwalPencarian?.ToString("dd MMMM yyyy");
+                ViewBag.tglAkhirPencarian = tglAkhirPencarian?.ToString("dd MMMM yyyy");
+                ViewBag.SelectedFilter = filterOptions;
+                return View(data);
+            }
         }
 
         [HttpGet]

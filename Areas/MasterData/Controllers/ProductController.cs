@@ -130,30 +130,6 @@ namespace PurchasingSystemApps.Areas.MasterData.Controllers
                 }
             }
 
-            var productData = data.OrderByDescending( u => u.CreateDateTime).ToList();
-
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            {
-                return Json(new
-                {
-                    data = productData.Select(product => new
-                    {
-                        createDate = product.CreateDateTime.ToString("dd MMMM yyyy"),
-                        productId = product.ProductId,
-                        productName = product.ProductName,
-                        supplier = product.Supplier?.SupplierName ?? string.Empty,
-                        category = product.Category?.CategoryName ?? string.Empty,
-                        measure = product.Measurement?.MeasurementName ?? string.Empty,
-                        minStock = product.MinStock,
-                        maxStock = product.MaxStock,
-                        bufferStock = product.BufferStock,
-                        stock = product.Stock,
-                        retailPrice = Math.Truncate(product.RetailPrice)
-
-                    })
-                });
-            }
-
             ViewBag.tglAwalPencarian = tglAwalPencarian?.ToString("dd MMMM yyyy");
             ViewBag.tglAkhirPencarian = tglAkhirPencarian?.ToString("dd MMMM yyyy");
             ViewBag.SelectedFilter = filterOptions;
